@@ -18,7 +18,7 @@ const Sidebar = () => {
     { path: "/tools", icon: HammerIcon, label: "Herramientas" },
     { path: "/administracion", icon: DollarSign, label: "Tarifas" },
     { path: "/reportes", icon: BarChart3, label: "Reportes" },
-    { path: "/configuracion", icon: Settings, label: "Configuración" },
+    { path: "/settings", icon: Settings, label: "Configuración" },
   ];
 
   return (

@@ -47,7 +47,7 @@ const ParkingPage = () => {
           <div className="h-52 flex items-center justify-center bg-background border border-zinc-800 rounded-2xl shadow-inner mt-2">
             <ImageOff className="text-muted-foreground" />
           </div>
-          <div className="flex gap-2 justify-center">
+          <div className="flex gap-2 justify-between">
             <VehicleCountCard count={55} type="Carros" />
             <VehicleCountCard count={12} type="Motos" />
           </div>
