@@ -1,32 +1,37 @@
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import React from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-interface CustomInputProps {
+interface FormTextAreaProps {
     formName: string
     label: string
-    type?: string
     disabled?: boolean
+    placeholder?: string
+    rows?: number
 }
 
-
-const CustomInput = ({formName, label, type='text', disabled}:CustomInputProps) => {
- const {control} = useFormContext()
- 
- 
+const FormTextArea = ({formName, label, disabled, placeholder, rows = 4}: FormTextAreaProps) => {
+  const {control} = useFormContext()
+  
   return <Controller
             control={control}
             name={formName}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} className=''>
                 <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-                <Input {...field} type={type} name={field.name} id={field.name} disabled={disabled} />
+                <Textarea 
+                  {...field} 
+                  name={field.name} 
+                  id={field.name} 
+                  disabled={disabled}
+                  placeholder={placeholder}
+                  rows={rows}
+                />
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
-  
 }
 
-export default CustomInput
+export default FormTextArea

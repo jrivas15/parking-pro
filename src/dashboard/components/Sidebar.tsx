@@ -13,7 +13,7 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { path: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/home", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/parking", icon: SquareParking, label: "Parking" },
     { path: "/tools", icon: HammerIcon, label: "Herramientas" },
     { path: "/administracion", icon: DollarSign, label: "Tarifas" },

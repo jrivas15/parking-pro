@@ -17,7 +17,7 @@ const FormIntInput = ({ formName, label, disabled }: NumberInputProps) => {
       control={control}
       name={formName}
       render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
+        <Field data-invalid={fieldState.invalid} className="mt-2">
           <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
           <Input
             disabled={disabled}

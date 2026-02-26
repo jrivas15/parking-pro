@@ -1,9 +1,10 @@
 import { Card } from "@/components/ui/card";
 import InfoCard from "./components/InfoCard";
+import PageLayout from "@/layouts/PageLayout";
 
 const HomePage = () => {
   return (
-    <section className="p-4 flex flex-col gap-4">
+    <PageLayout>
       <div className="flex gap-2 justify-between">
         <InfoCard
           title="Ocupacion actual"
@@ -35,7 +36,7 @@ const HomePage = () => {
         <Card>sdasd</Card>
       </div>
       <div className="h-full w-full bg-amber-800">ingresos recientes</div>
-    </section>
+    </PageLayout>
   );
 };
 

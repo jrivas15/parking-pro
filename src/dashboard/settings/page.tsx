@@ -7,7 +7,7 @@ const SettingPage = () => {
     <section className='grid grid-rows-[auto_1fr] h-full py-2 px-10 w-full '>
       <h1 className='text-white text-center text-2xl'>Ajustes</h1>
       <div className='mt-20 w-full grid grid-cols-6 grid-rows-5 gap-8 '>
-        <MenuOption route='/settings/parking' text='Parqueadero' icon={<FaParking className='size-11'/>}/>
+        <MenuOption route='/settings/parking-info' text='Parqueadero' icon={<FaParking className='size-11'/>}/>
         <MenuOption route='/settings/tariffs' text='Tarifas' icon={<Banknote className='size-11'/>}/>
         <MenuOption route='/settings/users' text='Usuarios' icon={<UserCircleIcon className='size-11'/>}/>
         <MenuOption route='/settings/db' text='DB' icon={<FaDatabase className='size-11'/>}/>

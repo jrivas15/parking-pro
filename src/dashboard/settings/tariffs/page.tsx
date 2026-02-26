@@ -20,6 +20,7 @@ import FormSwitch from "@/components/forms/FormSwitch";
 import useTariff from "./hooks/useTariff";
 import useTariffQuery from "./hooks/useTariffQuery";
 import { Tariff } from "./types/tariff.type";
+import PageLayout from "@/layouts/PageLayout";
 const TariffsPage = () => {
   const {
     mode,
@@ -35,11 +36,11 @@ const TariffsPage = () => {
     handleCancel,
     handleSubmit,
   } = useTariff();
-  const {data:dataTariffs} = useTariffQuery();
+  const { data: dataTariffs } = useTariffQuery();
   const isDisabled = mode === "view";
 
   return (
-    <section className="flex  flex-col gap-4 p-4">
+    <PageLayout>
       <FormProvider {...form}>
         <FormSwitch formName="enable" label="Activa" disabled={isDisabled} />
         <form
@@ -62,7 +63,10 @@ const TariffsPage = () => {
                     <SelectGroup>
                       <SelectLabel>Tarifa</SelectLabel>
                       {dataTariffs?.map((tariff: Tariff) => (
-                        <SelectItem key={tariff.id} value={tariff.id.toString()}>
+                        <SelectItem
+                          key={tariff.id}
+                          value={tariff.id.toString()}
+                        >
                           {tariff.name}
                         </SelectItem>
                       ))}
@@ -151,7 +155,7 @@ const TariffsPage = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-4 gap-3">
                 {daysOfWeek.map((day) => {
                   const isSelected = selectedDays.includes(day.id);
                   return (
@@ -165,7 +169,7 @@ const TariffsPage = () => {
                       }`}
                     >
                       <div
-                        className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold transition-all ${
+                        className={`w-13 h-13 rounded-full flex items-center justify-center text-2xl font-bold transition-all ${
                           isSelected
                             ? "bg-yellow-500 text-black"
                             : "border-2 border-yellow-600 text-yellow-600"
@@ -232,7 +236,7 @@ const TariffsPage = () => {
           </menu>
         </form>
       </FormProvider>
-    </section>
+    </PageLayout>
   );
 };
 

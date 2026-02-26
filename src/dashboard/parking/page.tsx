@@ -16,10 +16,11 @@ import {
 } from "lucide-react";
 import PlateInput from "./components/PlateInput";
 import { DataTable } from "@/components/shared/DataTable";
+import PageLayout from "@/layouts/PageLayout";
 
 const ParkingPage = () => {
   return (
-    <section className="flex flex-col gap-4">
+    <PageLayout>
       <div className="grid grid-cols-[2fr_1fr] h-full p-2">
         <div className="flex flex-col gap-4">
           <PlateInput />
@@ -98,7 +99,7 @@ const ParkingPage = () => {
           </Button>
         </menu>
       </footer>
-    </section>
+    </PageLayout>
   );
 };
 

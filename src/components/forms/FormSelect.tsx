@@ -42,7 +42,7 @@ const FormSelect = ({
           <Select
             disabled={disabled}
             name={field.name}
-            value={field.value}
+            value={field.value || null}
             onValueChange={field.onChange}
           >
             <SelectTrigger
