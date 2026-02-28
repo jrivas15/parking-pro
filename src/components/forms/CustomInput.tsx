@@ -8,10 +8,11 @@ interface CustomInputProps {
     label: string
     type?: string
     disabled?: boolean
+    autoFocus?: boolean
 }
 
 
-const CustomInput = ({formName, label, type='text', disabled}:CustomInputProps) => {
+const CustomInput = ({formName, label, type='text', disabled, autoFocus=false}:CustomInputProps) => {
  const {control} = useFormContext()
  
  
@@ -21,7 +22,7 @@ const CustomInput = ({formName, label, type='text', disabled}:CustomInputProps) 
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} className=''>
                 <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-                <Input {...field} type={type} name={field.name} id={field.name} disabled={disabled} />
+                <Input {...field} type={type} name={field.name} id={field.name} disabled={disabled} autoFocus={autoFocus} />
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}

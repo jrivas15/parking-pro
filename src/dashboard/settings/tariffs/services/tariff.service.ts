@@ -19,12 +19,12 @@ export const deleteTariff = async (id: number) => {
     return response.data;
 }
 
-export const getTariffs = async () => {
+export const getTariffs = async (): Promise<Tariff[]> => {
     const response = await apiService.get("/tariffs/");
     return response.data;
 }
 
-export const getTariffById = async (id: number) => {
+export const getTariffById = async (id: number): Promise<Tariff> => {
     const response = await apiService.get(`/tariffs/${id}`);
     return response.data;
 }

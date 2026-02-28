@@ -7,6 +7,7 @@ import LoginPage from "@/login/page";
 import DashboardHome from "@/dashboard/home/page";
 import path from "node:path";
 import ParkingInfo from "@/dashboard/settings/parkingInfo/page";
+import PaymentMethodsPage from "@/dashboard/settings/paymentMethods/page";
 
 export const routes = [
   {
@@ -25,5 +26,6 @@ export const routes = [
   { path: "/settings/tariffs", component: <TariffsPage /> },
   { path: "/settings/users", component: <UserPage /> },
   { path: "/settings/parking-info", component: <ParkingInfo /> },
+  { path: "/settings/payment-methods", component: <PaymentMethodsPage /> },
 
 ];
