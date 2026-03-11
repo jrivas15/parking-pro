@@ -1,5 +1,5 @@
 import MenuOption from '@/components/shared/MenuOption';
-import { Banknote, CreditCard, UserCircleIcon, WrenchIcon, Server, ScrollText } from 'lucide-react'
+import { Banknote, CreditCard, UserCircleIcon, WrenchIcon, Server, ScrollText, Percent } from 'lucide-react'
 import { FaParking, FaDatabase, FaCar } from "react-icons/fa";
 
 const SettingPage = () => {
@@ -16,6 +16,7 @@ const SettingPage = () => {
         <MenuOption route='/settings/backups' text='Backups' icon={<Server className='size-11'/>}/>
         <MenuOption route='/settings/plate-restriction' text='Pico y placa' icon={<FaCar className='size-11'/>}/>
         <MenuOption route='/settings/payment-methods' text='Métodos de pago' icon={<CreditCard className='size-11'/>}/>
+        <MenuOption route='/settings/taxes' text='Impuestos' icon={<Percent className='size-11'/>}/>
       </div>
     </section>
   )

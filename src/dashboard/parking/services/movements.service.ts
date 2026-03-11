@@ -18,3 +18,8 @@ export const newMovement = async (data: MovementLike) => {
     return response.data;
 
 }
+
+export const getLastExitMovements = async (): Promise<Movement[]> => {
+    const response = await apiService.get("/movements/last_exit_movements/");
+    return response.data;
+}

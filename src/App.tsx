@@ -40,7 +40,7 @@ const App = () => {
 
       <ReactQueryDevtools initialIsOpen={false} />
       <Toaster
-        position="top-right"
+        position="top-center"
         options={{
           fill: "#171717",
           roundness: 16,

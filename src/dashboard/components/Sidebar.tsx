@@ -6,6 +6,8 @@ import {
   Settings,
   icons,
   HammerIcon,
+  Car,
+  Users,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -16,8 +18,10 @@ const Sidebar = () => {
     { path: "/home", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/parking", icon: SquareParking, label: "Parking" },
     { path: "/tools", icon: HammerIcon, label: "Herramientas" },
-    { path: "/administracion", icon: DollarSign, label: "Tarifas" },
-    { path: "/reportes", icon: BarChart3, label: "Reportes" },
+    { path: "/vehicles", icon: Car, label: "Vehículos" },
+    { path: "/clients", icon: Users, label: "Clientes" },
+    { path: "/administracion", icon: DollarSign, label: "Administración" },
+    // { path: "/reportes", icon: BarChart3, label: "Reportes" },
     { path: "/settings", icon: Settings, label: "Configuración" },
   ];
 

@@ -10,9 +10,12 @@ const useMovementMutation = () => {
             queryClient.invalidateQueries({ queryKey: ['movements'] })
             sileo.success({title:"Ingreso", description:"Movimiento registrado correctamente."})
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.log(error)
-            sileo.error({title:"Ingreso", description:"Error al registrar movimiento."})
+            if (error?.response?.status !== 409) {
+                sileo.error({title:"Ingreso", description:"Error al registrar movimiento."})
+            }
+
         }
     })
   

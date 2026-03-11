@@ -33,9 +33,10 @@ import Plate from "./Plate";
 interface Props {
   data: Movement[];
   onSelectMovement: (movement: Movement) => void;
+  onDoubleClickMovement?: (movement: Movement) => void;
 }
 
-export function ParkingTable({ data, onSelectMovement }: Props) {
+export function ParkingTable({ data, onSelectMovement, onDoubleClickMovement }: Props) {
   const columns: ColumnDef<Movement>[] = [
     {
       accessorKey: "plate",
@@ -175,7 +176,7 @@ export function ParkingTable({ data, onSelectMovement }: Props) {
 
   return (
     <div className="overflow-auto rounded-md border">
-      <Table className="">
+      <Table>
         <TableHeader className="bg-zinc-900">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="">
@@ -204,6 +205,11 @@ export function ParkingTable({ data, onSelectMovement }: Props) {
                   row.getIsSelected() ? "border-l-yellow-600" : "cursor-pointer"
                 }
                 onClick={row.getToggleSelectedHandler()}
+                onDoubleClick={() => {
+                  if (onDoubleClickMovement) {
+                    onDoubleClickMovement(row.original);
+                  }
+                }}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

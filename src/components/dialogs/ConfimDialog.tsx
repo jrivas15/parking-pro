@@ -7,7 +7,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import React from "react";
 
@@ -36,7 +35,7 @@ export function ConfirmDialog({ fx, title, description, open, setOpen }: Confirm
             <Button variant="outline">Cancelar</Button>
           </DialogClose>
           <DialogClose asChild>
-            <Button type="button" onClick={() => { fx() }}>
+            <Button type="button" onClick={() => { fx() }} autoFocus>
               Confirmar
             </Button>
           </DialogClose>

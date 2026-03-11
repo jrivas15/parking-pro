@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { getActiveMovements, getPaymentValue } from '../services/movements.service'
+import { getActiveMovements, getLastExitMovements, getPaymentValue } from '../services/movements.service'
 
 interface UseMovementQueryProps {
-   plate?: string
+  plate?: string
+  tariff?: number
 }
 
 
-const useMovementQuery = ({plate}: UseMovementQueryProps) => {
+const useMovementQuery = ({plate, tariff}: UseMovementQueryProps) => {
 
     const movementQuery = useQuery({
         queryKey: ['movements'],
@@ -15,15 +16,22 @@ const useMovementQuery = ({plate}: UseMovementQueryProps) => {
     })
 
     const movementPaymentQuery = useQuery({
-        queryKey: ['paymentValue', plate],
-        queryFn: () => getPaymentValue(plate, null),
+        queryKey: ['paymentValue', plate, tariff ?? null],
+        queryFn: () => getPaymentValue(plate, tariff ?? null),
         staleTime: 1000 * 30,
         enabled: !!plate
     })
 
+    const lastExitMovementsQuery = useQuery({
+        queryKey: ['lastExitMovements'],
+        queryFn: getLastExitMovements,
+        refetchInterval: 1000 * 5,
+    })
+
   return {
     movementQuery,
-    movementPaymentQuery
+    movementPaymentQuery,
+    lastExitMovementsQuery
   }
 }
 

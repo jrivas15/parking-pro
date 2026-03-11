@@ -15,6 +15,7 @@ export interface Movement {
 export interface PaymentData {
     total: number;
     parkingTime: string;
+    tariff: number;
 }
 
 export type MovementLike = Pick<Movement, 'plate' | 'card'>;

@@ -11,7 +11,7 @@ const Layout = ({ children }: LayoutProps) => {
       <Sidebar />
       <div className="grid grid-rows-[auto_1fr]">
         <Header />
-        
+        {children}
       </div>
     </div>
   )
