@@ -1,0 +1,15 @@
+municipios = [
+    {'code_depto': '5', 'code_municipio': '05001', 'depto': 'Antioquia', 'municipio': 'MEDELLÍN'},
+    {'code_depto': '11', 'code_municipio': '11001', 'depto': 'Bogotá, D.C.', 'municipio': 'BOGOTÁ, D.C.'},
+    {'code_depto': '13', 'code_municipio': '13001', 'depto': 'Bolívar', 'municipio': 'CARTAGENA DE INDIAS'},
+    {'code_depto': '13', 'code_municipio': '13006', 'depto': 'Bolívar', 'municipio': 'ACHÍ'},
+    {'code_depto': '13', 'code_municipio': '13030', 'depto': 'Bolívar', 'municipio': 'ALTOS DEL ROSARIO'},
+    {'code_depto': '13', 'code_municipio': '13042', 'depto': 'Bolívar', 'municipio': 'ARENAL'},
+    {'code_depto': '13', 'code_municipio': '13052', 'depto': 'Bolívar', 'municipio': 'ARJONA'},
+    {'code_depto': '13', 'code_municipio': '13062', 'depto': 'Bolívar', 'municipio': 'ARROYOHONDO'},
+    {'code_depto': '13', 'code_municipio': '13074', 'depto': 'Bolívar', 'municipio': 'BARRANCO DE LOBA'},
+    {'code_depto': '13', 'code_municipio': '13140', 'depto': 'Bolívar', 'municipio': 'CALAMAR'},
+    {'code_depto': '13', 'code_municipio': '13160', 'depto': 'Bolívar', 'municipio': 'CANTAGALLO'},
+    {'code_depto': '13', 'code_municipio': '13188', 'depto': 'Bolívar', 'municipio': 'CICUCO'},
+    {'code_depto': '13', 'code_municipio': '13212', 'depto': 'Bolívar', 'municipio': 'CÓRDOBA'},
+]

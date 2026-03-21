@@ -1,0 +1,64 @@
+name: sparking
+services:
+
+  django:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    container_name: django
+    restart: always
+    image: sparking:0.9.5
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - PYTHONUNBUFFERED=1
+
+  celery-beat:
+    container_name: celery-beat
+    command: celery -A parking beat --loglevel=info
+    restart: unless-stopped
+    image: sparking:0.9.5
+    volumes:
+      - .:/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - django
+
+  celery-worker:
+    restart: unless-stopped
+    container_name: celery-worker
+    command: celery -A parking worker --loglevel=info
+    image: sparking:0.9.5
+    volumes:
+      - .:/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - django
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:18
+    container_name: db
+    restart: always
+    environment:
+      POSTGRES_DB: parking_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWD}
+    ports:
+      - "5432:5432"
+    

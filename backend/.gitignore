@@ -1,0 +1,15 @@
+env
+.DS_Store
+*.log
+*.p12
+__pycache__
+dist
+build
+*.zip
+*.pdf
+skadi.txt
+.env
+*.jpg
+global_utils/docs/xml_signed/*.xml
+celerybeat-schedule
+celerybeat-schedule.*
