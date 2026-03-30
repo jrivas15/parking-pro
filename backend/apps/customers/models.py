@@ -6,7 +6,6 @@ class Customer(models.Model):
     personType = models.CharField(max_length=50)
     documentType = models.CharField(max_length=50)
     nDoc = models.IntegerField()
-    # dv = models.IntegerField(null=True, blank=True)
     phone = models.CharField(max_length=50, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     postalCode = models.CharField(max_length=20, null=True, blank=True)

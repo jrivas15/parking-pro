@@ -49,10 +49,14 @@ class MovementViewSet(viewsets.ModelViewSet):
                 print(e)
                 return Response({'error': 'Tariff error'}, status=500)
         
+        if movement.speciality in ('VIP', 'MENS'):
+            parking_time = PaymentCalculator(tarrif_obj, movement.entryTime).parking_time_msg
+            return Response({'total': 0, 'parkingTime': parking_time, 'tariff': tarrif_obj.pk})
+
         payment = PaymentCalculator(tarrif_obj, movement.entryTime)
 
-        return Response({'total': payment.total_payment, 
-                         'parkingTime': payment.parking_time_msg, 
+        return Response({'total': payment.total_payment,
+                         'parkingTime': payment.parking_time_msg,
                          'tariff': tarrif_obj.pk
                          })
     

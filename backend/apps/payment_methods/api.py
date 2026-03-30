@@ -5,7 +5,7 @@ from .models import PaymentMethod
 
 class PaymentMethodViewSet(viewsets.ModelViewSet):
     queryset = PaymentMethod.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     serializer_class = PaymentMethodSerializer
 
     def perform_update(self, serializer):

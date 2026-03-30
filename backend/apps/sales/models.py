@@ -6,7 +6,7 @@ from apps.payment_methods.models import PaymentMethod
 
 
 class Sale(models.Model):
-    movement = models.ForeignKey(Movement, on_delete=models.CASCADE, related_name='sales')
+    movement = models.ForeignKey(Movement, on_delete=models.CASCADE, null=True, blank=True, related_name='sales')
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     taxPercent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -30,4 +30,6 @@ class Sale(models.Model):
         verbose_name_plural = 'Sales'
 
     def __str__(self):
-        return f'Sale {self.id} - Ticket {self.movement.nTicket} - Total {self.total} - plate {self.movement.vehicle.plate}'
+        if self.movement:
+            return f'Sale {self.id} - Ticket {self.movement.nTicket} - Total {self.total}'
+        return f'Sale {self.id} - {self.item} - Total {self.total}'

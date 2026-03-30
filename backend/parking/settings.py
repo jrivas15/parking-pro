@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'apps.subscriptions.apps.SubscriptionsConfig',
     'apps.vehicles.apps.VehiclesConfig',
     'apps.municipios.apps.MunicipiosConfig',
+    'apps.expenses.apps.ExpensesConfig',
 ]
 
 MIDDLEWARE = [
@@ -182,8 +183,12 @@ CELERY_BEAT_SCHEDULE = {
     #     'schedule': crontab(minute='*/1'),  # Schedule the task to run every minute
     # },
     'clean-media-folder': {
-        'task': 'apps.movimientos.tasks.clean_media_folder',
+        'task': 'apps.movements.tasks.clean_media_folder',
         'schedule': crontab(hour=0, minute=0),  # Schedule the task to run daily at midnight
+    },
+    'update-subscription-states': {
+        'task': 'apps.subscriptions.tasks.update_subscription_states',
+        'schedule': 60,  # Cada 5 minutos
     },
 }
 

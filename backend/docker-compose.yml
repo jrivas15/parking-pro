@@ -1,12 +1,12 @@
-name: sparking
+name: sparking:1.0.0
 services:
 
   django:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
-    container_name: django
+    container_name: django-2
     restart: always
-    image: sparking:0.9.5
+    image: sparking:1.0.0
     volumes:
       - .:/app
     ports:
@@ -16,32 +16,35 @@ services:
       - db
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
-      - PYTHONUNBUFFERED=1
-
-  celery-beat:
-    container_name: celery-beat
-    command: celery -A parking beat --loglevel=info
-    restart: unless-stopped
-    image: sparking:0.9.5
-    volumes:
-      - .:/app
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    depends_on:
-      - django
+      - PYTHONUNBUFFERED=1
 
   celery-worker:
     restart: unless-stopped
     container_name: celery-worker
     command: celery -A parking worker --loglevel=info
-    image: sparking:0.9.5
+    image: sparking:1.0.0
     volumes:
       - .:/app
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
+      - redis
+      - django
+
+  celery-beat:
+    container_name: celery-beat
+    command: celery -A parking beat --loglevel=info
+    restart: unless-stopped
+    image: sparking:1.0.0
+    volumes:
+      - .:/app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
       - django
 
   redis:
@@ -53,7 +56,7 @@ services:
 
   db:
     image: postgres:18
-    container_name: db
+    container_name: db-postgres
     restart: always
     environment:
       POSTGRES_DB: parking_db
@@ -61,4 +64,3 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWD}
     ports:
       - "5432:5432"
-    

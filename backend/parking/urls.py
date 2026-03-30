@@ -35,4 +35,6 @@ urlpatterns = [
     path('subscriptions/', include('apps.subscriptions.urls')),
     path('vehicles/', include('apps.vehicles.urls')),
     path('municipios/', include('apps.municipios.urls')),
+    path('vip/', include('apps.vip.urls')),
+    path('expenses/', include('apps.expenses.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

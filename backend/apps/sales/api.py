@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 
 from apps.payment_methods.models import PaymentMethod
 from apps.taxes.models import Tax
+from apps.expenses.models import Expense
 from .models import Sale
 from .serializer import SaleSerializer, SaleWithMovementSerializer
 from apps.sales_reports.models import SalesReport
@@ -92,6 +93,17 @@ class SaleViewSet(viewsets.ModelViewSet):
         stats['byPaymentMethod1'] = list(by_payment_method1)
         stats['byPaymentMethod2'] = list(by_payment_method2)
 
+        open_expenses = Expense.objects.filter(saleReport__isnull=True)
+        expenses_total = open_expenses.aggregate(total=Sum('value'))['total'] or 0
+        stats['totalExpenses'] = expenses_total
+
+        expenses_by_payment_method = list(
+            open_expenses.filter(paymentMethod__isnull=False)
+            .values('paymentMethod__id', 'paymentMethod__name')
+            .annotate(total=Sum('value'))
+        )
+        stats['expensesByPaymentMethod'] = expenses_by_payment_method
+
         serializer = SaleWithMovementSerializer(sales, many=True)
         return Response({
             'stats': stats,
@@ -146,16 +158,23 @@ class SaleViewSet(viewsets.ModelViewSet):
                     if stats[key] is None:
                         stats[key] = 0
 
+                # Gastos abiertos sin reporte
+                open_expenses = Expense.objects.filter(saleReport__isnull=True)
+                total_expenses = open_expenses.aggregate(total=Sum('value'))['total'] or 0
+
                 # Crear el SalesReport
                 sale_report = SalesReport.objects.create(
                     user=request.user,
                     note=note,
-                    expenses=request.data.get('expenses', 0),
+                    expenses=total_expenses,
                     discount=stats['totalDiscount'],
                     subtotal=stats['totalSubtotal'],
                     tax_value=stats['totalTax'],
                     total=stats['totalSales'],
                 )
+
+                # Asociar gastos abiertos al nuevo reporte
+                open_expenses.update(saleReport=sale_report)
 
                 # Actualizar todas las sales filtradas con el nuevo SalesReport
                 updated = sales.update(saleReport=sale_report)
@@ -223,7 +242,7 @@ class SaleViewSet(viewsets.ModelViewSet):
                 }
                 # Crear venta
                 sale = Sale.objects.create(**sale_json)
-                serializer = self.get_serializer(sale)
+                serializer = SaleWithMovementSerializer(sale)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except Movement.DoesNotExist:
                 return Response({'error': 'Movimiento no encontrado o ya cerrado.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -233,3 +252,22 @@ class SaleViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'Método de pago no encontrado.'}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
                 return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'])
+    def by_report(self, request):
+        report_id = request.query_params.get('reportId')
+        if not report_id:
+            return Response({'error': 'reportId is required'}, status=status.HTTP_400_BAD_REQUEST)
+        sales = Sale.objects.filter(saleReport__id=report_id).select_related(
+            'movement', 'movement__tariff', 'paymentMethod'
+        ).order_by('-id')
+        serializer = SaleWithMovementSerializer(sales, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def recent_sales(self, request):
+        sales = Sale.objects.select_related(
+            'movement', 'movement__tariff', 'paymentMethod'
+        ).filter(item='PARKING').order_by('-id')[:15]
+        serializer = SaleWithMovementSerializer(sales, many=True)
+        return Response(serializer.data)
