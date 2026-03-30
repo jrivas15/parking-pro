@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import MenuOption from '@/components/shared/MenuOption';
-import { Scale, Calculator } from 'lucide-react';
+import { Scale, Calculator, TrendingDown } from 'lucide-react';
 import CashCountDialog from './cashCount/CashCountDialog';
 
 const ToolsPage = () => {
@@ -12,6 +12,7 @@ const ToolsPage = () => {
       <div className='mt-20 w-full grid grid-cols-6 grid-rows-5 gap-8'>
         <MenuOption route='/tools/balance' text='Balance de caja' icon={<Scale className='size-11' />} />
         <MenuOption onClick={() => setCashCountOpen(true)} text='Arqueo' icon={<Calculator className='size-11' />} />
+        <MenuOption route='/tools/expenses' text='Gastos' icon={<TrendingDown className='size-11' />} />
       </div>
 
       <CashCountDialog open={cashCountOpen} onOpenChange={setCashCountOpen} />

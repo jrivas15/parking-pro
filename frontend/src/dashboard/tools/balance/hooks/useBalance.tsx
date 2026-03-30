@@ -38,6 +38,14 @@ const buildColumns = (handlers: SaleActionHandlers): ColumnDef<SaleWithMovement>
         header: 'ID',
     },
     {
+        accessorKey: 'item',
+        header: 'Concepto',
+        cell: (info) => {
+            const item = info.getValue() as string | null;
+            return <span className="text-xs">{item ?? 'PARQUEADERO'}</span>;
+        }
+    },
+    {
         accessorKey: 'movement.plate',
         header: 'Placa',
         cell: (info) => {

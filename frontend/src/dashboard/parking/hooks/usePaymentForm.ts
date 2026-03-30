@@ -11,15 +11,17 @@ import { Movement, PaymentData } from "../types/movements.type";
 import useMovementQuery from "./useMovementQuery";
 import { useQueryClient } from "@tanstack/react-query";
 import { newSale } from "../services/sales.service";
+import { SaleReceipt } from "../types/sale.type";
 import { sileo } from "sileo";
 
 interface UsePaymentFormProps {
   open: boolean;
   selectedMovement: Movement | null;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onSaleCompleted?: (sale: SaleReceipt) => void;
 }
 
-const usePaymentForm = ({ open, selectedMovement, setOpen }: UsePaymentFormProps) => {
+const usePaymentForm = ({ open, selectedMovement, setOpen, onSaleCompleted }: UsePaymentFormProps) => {
   const form = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
     defaultValues,
@@ -47,7 +49,6 @@ const usePaymentForm = ({ open, selectedMovement, setOpen }: UsePaymentFormProps
     if (paymentData) {
       form.setValue("total", paymentData.total);
       form.setValue("parkingTime", paymentData.parkingTime);
-      // console.log(selectedMovement)
     }
     if (selectedMovement) form.setValue("nTicket", selectedMovement.nTicket);
 
@@ -97,12 +98,13 @@ const usePaymentForm = ({ open, selectedMovement, setOpen }: UsePaymentFormProps
   }, [selectedMovement, paymentData]);
 
   const onSubmit = async (data: PaymentFormData) => {
-    // console.log(data);
-    const response = await newSale(data);
-    if (response) {
+    const sale = await newSale(data);
+    if (sale) {
       setOpen(false)
       sileo.success({ title: "Venta Exitosa", description: "Pago registrado exitosamente" });
       queryClient.invalidateQueries({ queryKey: ['movements'] })
+      queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
+      onSaleCompleted?.(sale);
     } else {
       sileo.error({ title: "Error en la venta", description: "Ocurrió un error al registrar el pago" });
     }

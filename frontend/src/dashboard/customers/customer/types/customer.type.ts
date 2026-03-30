@@ -1,10 +1,13 @@
 export interface Customer {
   id: number;
   name: string;
-  docType: "CC" | "NIT" | "CE";
-  doc: string;
-  phone: string;
-  email: string;
-  customerType: "NATURAL" | "JURIDICA";
-  notes?: string;
+  personType: string;
+  documentType: string;
+  nDoc: number;
+  phone: string | null;
+  address: string | null;
+  postalCode: string | null;
+  location: number | null;
+  email: string | null;
+  taxID: number | null;
 }

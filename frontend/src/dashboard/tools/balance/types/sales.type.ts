@@ -32,6 +32,8 @@ export interface BalanceData {
         byPaymentMethod: PaymentMethodSummary[];
         byPaymentMethod1: PaymentMethodSummary[];
         byPaymentMethod2: PaymentMethodSummary[];
+        totalExpenses: number;
+        expensesByPaymentMethod: { paymentMethod__id: number; paymentMethod__name: string; total: number }[];
     }
 }
 export interface PaymentMethodSummary {

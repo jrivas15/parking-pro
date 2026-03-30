@@ -20,7 +20,7 @@ const Sidebar = () => {
     { path: "/tools", icon: HammerIcon, label: "Herramientas" },
     { path: "/vehicles", icon: Car, label: "Vehículos" },
     { path: "/clients", icon: Users, label: "Clientes" },
-    { path: "/administracion", icon: DollarSign, label: "Administración" },
+    { path: "/administration", icon: DollarSign, label: "Administración" },
     // { path: "/reportes", icon: BarChart3, label: "Reportes" },
     { path: "/settings", icon: Settings, label: "Configuración" },
   ];

@@ -7,66 +7,49 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/shared/DataTable";
 import PageLayout from "@/layouts/PageLayout";
 import BackBtn from "@/components/shared/BackBtn";
-import Plate from "@/dashboard/parking/components/Plate";
 import {
   Users,
   CheckCircle2,
   CalendarClock,
   AlertCircle,
   Search,
-  Filter,
-  Download,
-  CircleDollarSign,
-  History,
   Pencil,
   Trash2,
-  PlusCircle,
+  CircleDollarSign,
 } from "lucide-react";
 import dayjs from "dayjs";
+import { Subscription, SubscriptionState } from "./types/subscription.type";
+import useSubscriptionsQuery from "./hooks/useSubscriptionsQuery";
+import useSubscriptionMutation from "./hooks/useSubscriptionMutation";
+import useSubscriptions from "./hooks/useSubscriptions";
+import SubscriptionFormDialog from "./dialogs/SubscriptionFormDialog";
+import SubscriptionPaymentsDialog from "./dialogs/SubscriptionPaymentsDialog";
+import { ConfirmDialog } from "@/components/dialogs/ConfimDialog";
 
-// ─── Types ─────────────────────────────────────────────────────────────────
-type MensualidadStatus = "Activo" | "Vencido" | "Por Vencer";
-
-interface Mensualidad {
-  id: number;
-  plate: string;
-  owner: string;
-  phone: string;
-  startDate: string;
-  endDate: string;
-  value: number;
-  status: MensualidadStatus;
-}
-
-// ─── Test data ──────────────────────────────────────────────────────────────
-const TEST_DATA: Mensualidad[] = [
-  { id: 1, plate: "ABC1234", owner: "Juan Pérez",        phone: "555-0123", startDate: "2023-10-01", endDate: "2023-10-31", value: 120_000, status: "Activo"     },
-  { id: 2, plate: "XYZ7890", owner: "María García",      phone: "555-9876", startDate: "2023-09-15", endDate: "2023-10-15", value:  85_000, status: "Vencido"    },
-  { id: 3, plate: "PLT4567", owner: "Carlos Rodríguez",  phone: "555-5555", startDate: "2023-09-20", endDate: "2023-10-20", value: 150_000, status: "Por Vencer" },
-  { id: 4, plate: "MNP3321", owner: "Ana Lucía Torres",  phone: "555-1122", startDate: "2023-10-05", endDate: "2023-11-05", value: 100_000, status: "Activo"     },
-  { id: 5, plate: "KLM9900", owner: "Roberto Silva",     phone: "555-3344", startDate: "2023-10-01", endDate: "2023-10-31", value: 120_000, status: "Activo"     },
-  { id: 6, plate: "QWE5544", owner: "Laura Martínez",    phone: "555-7788", startDate: "2023-09-10", endDate: "2023-10-10", value:  90_000, status: "Vencido"    },
-  { id: 7, plate: "RTY2211", owner: "Diego Herrera",     phone: "555-6600", startDate: "2023-10-12", endDate: "2023-11-12", value: 110_000, status: "Activo"     },
-  { id: 8, plate: "OPL8877", owner: "Valentina Ríos",    phone: "555-4411", startDate: "2023-10-18", endDate: "2023-10-25", value:  75_000, status: "Por Vencer" },
-];
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 const fmt = (n: number) =>
-  "$" + n.toLocaleString("es-CO", { minimumFractionDigits: 2 });
+  "$" + Number(n).toLocaleString("es-CO", { minimumFractionDigits: 2 });
 
-const StatusBadge = ({ status }: { status: MensualidadStatus }) => {
-  const map: Record<MensualidadStatus, string> = {
-    Activo:     "bg-green-500/15 text-green-500 border-green-500/30",
-    Vencido:    "bg-destructive/15 text-destructive border-destructive/30",
-    "Por Vencer": "bg-orange-500/15 text-orange-400 border-orange-400/30",
-  };
-  return (
-    <Badge variant="outline" className={`${map[status]} font-medium`}>
-      <span className="size-1.5 rounded-full bg-current mr-1.5 inline-block" />
-      {status}
-    </Badge>
-  );
+const stateLabel: Record<SubscriptionState, string> = {
+  active:    "Activo",
+  expired:   "Vencido",
+  cancelled: "Cancelado",
+  pending:   "Pendiente",
 };
+
+const stateClass: Record<SubscriptionState, string> = {
+  active:    "bg-green-500/15 text-green-500 border-green-500/30",
+  expired:   "bg-destructive/15 text-destructive border-destructive/30",
+  cancelled: "bg-muted text-muted-foreground border-border",
+  pending:   "bg-orange-500/15 text-orange-400 border-orange-400/30",
+};
+
+const StateBadge = ({ state }: { state: SubscriptionState }) => (
+  <Badge variant="outline" className={`${stateClass[state]} font-medium`}>
+    <span className="size-1.5 rounded-full bg-current mr-1.5 inline-block" />
+    {stateLabel[state]}
+  </Badge>
+);
 
 // ─── Stat card ───────────────────────────────────────────────────────────────
 interface StatCardProps {
@@ -90,73 +73,110 @@ const StatCard = ({ title, value, sub, subColor = "text-green-400", icon }: Stat
   </Card>
 );
 
-// ─── Page ────────────────────────────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 const MonthlyPaymentPage = () => {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<MensualidadStatus | "Todos">("Todos");
+  const [stateFilter, setStateFilter] = useState<SubscriptionState | "all">("all");
 
-  const filtered = TEST_DATA.filter((m) => {
+  const [paymentTarget, setPaymentTarget] = useState<Subscription | null>(null);
+  const [openPayment, setOpenPayment] = useState(false);
+
+  const { subscriptions, stats } = useSubscriptionsQuery();
+  const { deleteSubscriptionMutation } = useSubscriptionMutation();
+  const {
+    openConfirm, setOpenConfirm,
+    openForm, setOpenForm,
+    selected,
+    handleDelete, handleUpdate,
+  } = useSubscriptions();
+
+  const handlePay = (s: Subscription) => {
+    setPaymentTarget(s);
+    setOpenPayment(true);
+  };
+
+  const filtered = (subscriptions ?? []).filter((s) => {
+    const plates = s.vehicles_data.map((v) => v.plate).join(" ").toLowerCase();
     const matchSearch =
       !search ||
-      m.plate.toLowerCase().includes(search.toLowerCase()) ||
-      m.owner.toLowerCase().includes(search.toLowerCase()) ||
-      m.status.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "Todos" || m.status === statusFilter;
-    return matchSearch && matchStatus;
+      plates.includes(search.toLowerCase()) ||
+      (s.customer_name ?? "").toLowerCase().includes(search.toLowerCase());
+    const matchState = stateFilter === "all" || s.state === stateFilter;
+    return matchSearch && matchState;
   });
 
-  const columns: ColumnDef<Mensualidad>[] = [
+  const columns: ColumnDef<Subscription>[] = [
     {
-      accessorKey: "plate",
-      header: "PLACA",
-      cell: (info) => <Plate plate={info.getValue() as string} />,
+      header: "PLACA(S)",
+      cell: (info) => (
+        <div className="flex flex-wrap gap-1">
+          {info.row.original.vehicles_data.map((v) => (
+            <Badge key={v.id} variant="outline" className="font-mono text-xs">
+              {v.plate}
+            </Badge>
+          ))}
+        </div>
+      ),
     },
     {
-      accessorKey: "owner",
-      header: "PROPIETARIO",
-      cell: (info) => <span className="font-medium">{info.getValue() as string}</span>,
-    },
-    {
-      accessorKey: "phone",
-      header: "TELÉFONO",
-      cell: (info) => <span className="text-muted-foreground">{info.getValue() as string}</span>,
+      accessorKey: "customer_name",
+      header: "CLIENTE",
+      cell: (info) => (
+        <span className="text-muted-foreground text-sm">
+          {(info.getValue() as string | null) ?? "—"}
+        </span>
+      ),
     },
     {
       header: "PERIODO",
       cell: (info) => {
-        const { startDate, endDate, status } = info.row.original;
-        const isExpired = status === "Vencido" || status === "Por Vencer";
+        const { startDate, endDate, state } = info.row.original;
+        const isWarn = state === "expired" || state === "pending";
         return (
           <div className="flex flex-col text-xs leading-5">
             <span>Inicia: {dayjs(startDate).format("DD/MM/YYYY")}</span>
-            <span className={isExpired ? "text-destructive" : ""}>
-              Vence: {dayjs(endDate).format("DD/MM/YYYY")}
-            </span>
+            {endDate && (
+              <span className={isWarn ? "text-destructive" : ""}>
+                Vence: {dayjs(endDate).format("DD/MM/YYYY")}
+              </span>
+            )}
           </div>
         );
       },
     },
     {
-      accessorKey: "value",
-      header: "VALOR",
-      cell: (info) => <span className="font-semibold">{fmt(info.getValue() as number)}</span>,
+      accessorKey: "total",
+      header: "TOTAL",
+      cell: (info) => (
+        <span className="font-semibold">{fmt(info.getValue() as number)}</span>
+      ),
     },
     {
-      accessorKey: "status",
+      accessorKey: "state",
       header: "ESTADO",
-      cell: (info) => <StatusBadge status={info.getValue() as MensualidadStatus} />,
+      cell: (info) => <StateBadge state={info.getValue() as SubscriptionState} />,
     },
     {
       header: "ACCIONES",
-      cell: () => (
+      cell: (info) => (
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" className="size-8">
-            <History size={14} />
+          <Button
+            variant="outline" size="icon" className="size-8 text-green-600 hover:text-green-600"
+            onClick={() => handlePay(info.row.original)}
+            title="Registrar pago"
+          >
+            <CircleDollarSign size={14} />
           </Button>
-          <Button variant="outline" size="icon" className="size-8">
+          <Button
+            variant="outline" size="icon" className="size-8"
+            onClick={() => handleUpdate(info.row.original)}
+          >
             <Pencil size={14} />
           </Button>
-          <Button variant="outline" size="icon" className="size-8 text-destructive hover:text-destructive">
+          <Button
+            variant="outline" size="icon" className="size-8 text-destructive hover:text-destructive"
+            onClick={() => handleDelete(info.row.original)}
+          >
             <Trash2 size={14} />
           </Button>
         </div>
@@ -164,7 +184,13 @@ const MonthlyPaymentPage = () => {
     },
   ];
 
-  const statusCycles: (MensualidadStatus | "Todos")[] = ["Todos", "Activo", "Por Vencer", "Vencido"];
+  const filterOptions: { label: string; value: SubscriptionState | "all" }[] = [
+    { label: "Todos",     value: "all"       },
+    { label: "Activo",    value: "active"    },
+    { label: "Pendiente", value: "pending"   },
+    { label: "Vencido",   value: "expired"   },
+    { label: "Cancelado", value: "cancelled" },
+  ];
 
   return (
     <PageLayout>
@@ -181,37 +207,39 @@ const MonthlyPaymentPage = () => {
               </p>
             </div>
           </div>
-          <Button className="gap-2">
-            <PlusCircle size={16} />
-            Crear Nueva Mensualidad
-          </Button>
+          <SubscriptionFormDialog
+            initialData={null}
+            open={openForm && !selected}
+            setOpen={setOpenForm}
+            showTrigger
+          />
         </div>
 
         {/* Stat cards */}
         <div className="flex gap-4">
           <StatCard
             title="Total Suscripciones"
-            value={1280}
-            sub="↑ +12% este mes"
+            value={stats.total}
+            sub="Registradas en el sistema"
             icon={<Users size={22} />}
           />
           <StatCard
             title="Activas"
-            value={1150}
-            sub="↑ +5% este mes"
+            value={stats.active}
+            sub="Vigentes actualmente"
             icon={<CheckCircle2 size={22} />}
           />
           <StatCard
             title="Por Vencer"
-            value={45}
+            value={stats.expiringSoon}
             sub="Próximos 7 días"
             subColor="text-orange-400"
             icon={<CalendarClock size={22} />}
           />
           <StatCard
-            title="En Mora"
-            value={85}
-            sub="↑ +8% de retraso"
+            title="Vencidas"
+            value={stats.expired}
+            sub="Sin renovar"
             subColor="text-destructive"
             icon={<AlertCircle size={22} />}
           />
@@ -224,47 +252,62 @@ const MonthlyPaymentPage = () => {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por placa, propietario o estado..."
+              placeholder="Buscar por placa o cliente..."
               className="pl-9"
             />
           </div>
 
-          {/* Status toggle */}
           <div className="flex border border-border rounded-md overflow-hidden">
-            {statusCycles.map((s) => (
+            {filterOptions.map(({ label, value }) => (
               <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
+                key={value}
+                onClick={() => setStateFilter(value)}
                 className={`px-3 py-1.5 text-sm transition-colors ${
-                  statusFilter === s
+                  stateFilter === value
                     ? "bg-primary text-primary-foreground font-semibold"
                     : "bg-background text-muted-foreground hover:bg-accent"
                 }`}
               >
-                {s === "Todos" ? "Todos los Estados" : s}
+                {label}
               </button>
             ))}
           </div>
-
-          <Button variant="outline" className="gap-2">
-            <Filter size={14} />
-            Filtros
-          </Button>
-          <Button variant="outline" className="gap-2">
-            <Download size={14} />
-            Exportar
-          </Button>
         </div>
 
         {/* Table */}
         <div className="flex flex-col gap-2 flex-1 min-h-0">
           <DataTable columns={columns} data={filtered} />
           <p className="text-xs text-muted-foreground">
-            Mostrando 1 a {filtered.length} de {TEST_DATA.length} mensualidades
+            Mostrando {filtered.length} de {subscriptions?.length ?? 0} mensualidades
           </p>
         </div>
 
       </div>
+
+      {/* Edit dialog */}
+      <SubscriptionFormDialog
+        initialData={selected}
+        open={openForm && !!selected}
+        setOpen={setOpenForm}
+        showTrigger={false}
+      />
+
+      {/* Delete confirm */}
+      <ConfirmDialog
+        open={openConfirm}
+        setOpen={setOpenConfirm}
+        title="Eliminar mensualidad"
+        description="¿Deseas eliminar esta suscripción? Esta acción no se puede deshacer."
+        fx={() => {
+          if (selected) deleteSubscriptionMutation.mutate(selected.id);
+        }}
+      />
+
+      <SubscriptionPaymentsDialog
+        subscription={paymentTarget}
+        open={openPayment}
+        onOpenChange={setOpenPayment}
+      />
     </PageLayout>
   );
 };

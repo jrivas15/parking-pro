@@ -1,24 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { sileo } from "sileo";
 import { VehicleFormData } from "../schemas/vehicle.schema";
-import { Vehicle } from "../types/vehicle.type";
+import { newVehicle, updateVehicle, deleteVehicle } from "../services/vehicles.service";
 
 const useVehicleMutation = () => {
   const queryClient = useQueryClient();
 
-  // ─── Helpers para manipular test data ──────────────────────────────────────
-  const getList = (): Vehicle[] =>
-    queryClient.getQueryData<Vehicle[]>(["vehicles"]) ?? [];
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["vehicles"] });
 
   const newVehicleMutation = useMutation({
-    mutationFn: async (data: VehicleFormData): Promise<Vehicle> => {
-      // TODO: reemplazar con newVehicle(data) cuando esté el API
-      const list = getList();
-      const next: Vehicle = { ...data, id: Date.now() };
-      queryClient.setQueryData<Vehicle[]>(["vehicles"], [...list, next]);
-      return next;
-    },
+    mutationFn: (data: VehicleFormData) => newVehicle(data),
     onSuccess: () => {
+      invalidate();
       sileo.success({ title: "Vehículos", description: "Vehículo registrado exitosamente" });
     },
     onError: () => {
@@ -27,17 +20,9 @@ const useVehicleMutation = () => {
   });
 
   const updateVehicleMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: VehicleFormData }): Promise<Vehicle> => {
-      // TODO: reemplazar con updateVehicle(id, data) cuando esté el API
-      const list = getList();
-      const updated: Vehicle = { ...data, id };
-      queryClient.setQueryData<Vehicle[]>(
-        ["vehicles"],
-        list.map((v) => (v.id === id ? updated : v)),
-      );
-      return updated;
-    },
+    mutationFn: ({ id, data }: { id: number; data: VehicleFormData }) => updateVehicle(id, data),
     onSuccess: () => {
+      invalidate();
       sileo.success({ title: "Vehículos", description: "Vehículo actualizado exitosamente" });
     },
     onError: () => {
@@ -46,15 +31,9 @@ const useVehicleMutation = () => {
   });
 
   const deleteVehicleMutation = useMutation({
-    mutationFn: async (id: number): Promise<void> => {
-      // TODO: reemplazar con deleteVehicle(id) cuando esté el API
-      const list = getList();
-      queryClient.setQueryData<Vehicle[]>(
-        ["vehicles"],
-        list.filter((v) => v.id !== id),
-      );
-    },
+    mutationFn: (id: number) => deleteVehicle(id),
     onSuccess: () => {
+      invalidate();
       sileo.success({ title: "Vehículos", description: "Vehículo eliminado exitosamente" });
     },
     onError: () => {

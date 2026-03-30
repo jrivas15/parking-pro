@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, User, Building2, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -21,17 +21,12 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import CustomInput from "@/components/forms/CustomInput";
 import FormSelect from "@/components/forms/FormSelect";
-import {
-  customerSchema,
-  defaultValues,
-  CustomerFormData,
-} from "../schemas/customer.schema";
+import { customerSchema, defaultValues, CustomerFormData } from "../schemas/customer.schema";
 import useCustomerMutation from "../hooks/useCustomerMutation";
 import { Customer } from "../types/customer.type";
 import { CUSTOMER_TYPES } from "@/data/optionData";
 import LocationSearchDialog from "./LocationSearchDialog";
 import useMunicipiosQuery from "../hooks/useMunicipios";
-// ─── Customer type picker ─────────────────────────────────────────────────────
 
 const CustomerTypePicker = ({
   value,
@@ -60,26 +55,34 @@ const CustomerTypePicker = ({
   </div>
 );
 
-// ─── Dialog ───────────────────────────────────────────────────────────────────
 interface CustomerFormDialogProps {
   initialData?: Customer | null;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const CustomerFormDialog = ({
-  initialData,
-  open,
-  setOpen,
-}: CustomerFormDialogProps) => {
+const CustomerFormDialog = ({ initialData, open, setOpen }: CustomerFormDialogProps) => {
   const { newCustomerMutation, updateCustomerMutation } = useCustomerMutation();
 
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
-    defaultValues: initialData ? { ...initialData } : defaultValues,
+    defaultValues: initialData
+      ? {
+          name:         initialData.name,
+          personType:   initialData.personType as "NATURAL" | "JURIDICA",
+          documentType: initialData.documentType as "CC" | "NIT" | "CE",
+          nDoc:         initialData.nDoc,
+          phone:        initialData.phone ?? "",
+          address:      initialData.address ?? "",
+          postalCode:   initialData.postalCode ?? "",
+          location:     initialData.location ?? null,
+          email:        initialData.email ?? "",
+          taxID:        initialData.taxID ?? null,
+        }
+      : defaultValues,
   });
 
-  const customerType = form.watch("customerType");
+  const personType = form.watch("personType");
 
   const onSubmit = (data: CustomerFormData) => {
     if (!initialData) {
@@ -97,7 +100,18 @@ const CustomerFormDialog = ({
 
   useEffect(() => {
     if (initialData) {
-      form.reset({ ...initialData });
+      form.reset({
+        name:         initialData.name,
+        personType:   initialData.personType as "NATURAL" | "JURIDICA",
+        documentType: initialData.documentType as "CC" | "NIT" | "CE",
+        nDoc:         initialData.nDoc,
+        phone:        initialData.phone ?? "",
+        address:      initialData.address ?? "",
+        postalCode:   initialData.postalCode ?? "",
+        location:     initialData.location ?? null,
+        email:        initialData.email ?? "",
+        taxID:        initialData.taxID ?? null,
+      });
     } else {
       form.reset(defaultValues);
     }
@@ -108,8 +122,7 @@ const CustomerFormDialog = ({
   const locationId = form.watch("location");
   const selectedLocation = municipios?.find((m) => m.id === locationId);
 
-  const isPending =
-    newCustomerMutation.isPending || updateCustomerMutation.isPending;
+  const isPending = newCustomerMutation.isPending || updateCustomerMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -120,31 +133,21 @@ const CustomerFormDialog = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>
-            {initialData ? "Editar cliente" : "Nuevo cliente"}
-          </DialogTitle>
+          <DialogTitle>{initialData ? "Editar cliente" : "Nuevo cliente"}</DialogTitle>
           <DialogDescription>
-            {initialData
-              ? "Actualiza la información del cliente."
-              : "Completa el formulario para registrar un nuevo cliente."}
+            {initialData ? "Actualiza la información del cliente." : "Completa el formulario para registrar un nuevo cliente."}
           </DialogDescription>
         </DialogHeader>
 
         <FormProvider {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4 overflow-y-auto pr-3"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4 overflow-y-auto pr-3">
+
             {/* Tipo */}
             <div className="flex flex-col gap-1.5">
               <span className="text-sm font-medium">Tipo de persona</span>
               <CustomerTypePicker
-                value={customerType}
-                onChange={(v) =>
-                  form.setValue("customerType", v as "NATURAL" | "JURIDICA", {
-                    shouldValidate: true,
-                  })
-                }
+                value={personType}
+                onChange={(v) => form.setValue("personType", v as "NATURAL" | "JURIDICA", { shouldValidate: true })}
               />
             </div>
 
@@ -152,7 +155,6 @@ const CustomerFormDialog = ({
 
             {/* Identificación */}
             <CustomInput formName="name" label="Nombre o Razón Social" />
-
             <div className="flex gap-3 items-start">
               <FormSelect
                 formName="documentType"
@@ -166,20 +168,13 @@ const CustomerFormDialog = ({
               />
               <CustomInput formName="nDoc" label="N° Documento" />
             </div>
-            <CustomInput
-              formName="email"
-              label="Correo electrónico"
-              type="email"
-            />
+            <CustomInput formName="email" label="Correo electrónico" type="email" />
 
             <Separator />
 
             <Accordion type="multiple" className="w-full">
-              {/* Datos adicionales */}
               <AccordionItem value="infoAdicional">
-                <AccordionTrigger className="text-sm font-medium">
-                  Datos adicionales
-                </AccordionTrigger>
+                <AccordionTrigger className="text-sm font-medium">Datos adicionales</AccordionTrigger>
                 <AccordionContent className="flex flex-col gap-4 pt-2">
                   <CustomInput formName="address" label="Dirección" />
                   <CustomInput formName="postalCode" label="Código postal" />
@@ -192,47 +187,30 @@ const CustomerFormDialog = ({
                           : <span className="text-muted-foreground">Sin seleccionar</span>}
                       </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setLocationDialogOpen(true)}
-                    >
+                    <Button type="button" variant="outline" size="icon" onClick={() => setLocationDialogOpen(true)}>
                       <Search className="size-4" />
                     </Button>
                   </div>
                   <LocationSearchDialog
                     open={locationDialogOpen}
                     onOpenChange={setLocationDialogOpen}
-                    onSelect={(city) => {
-                      form.setValue("location", city.id, {
-                        shouldValidate: true,
-                      });
-                    }}
+                    onSelect={(city) => form.setValue("location", city.id, { shouldValidate: true })}
                   />
                   <CustomInput formName="phone" label="Teléfono" type="tel" />
                 </AccordionContent>
               </AccordionItem>
 
-              {/* Fiscal */}
               <AccordionItem value="fiscal">
-                <AccordionTrigger className="text-sm font-medium">
-                  Fiscal
-                </AccordionTrigger>
+                <AccordionTrigger className="text-sm font-medium">Fiscal</AccordionTrigger>
                 <AccordionContent className="flex flex-col gap-4 pt-2">
-                  <div className="flex gap-3 items-start">
-                    <CustomInput formName="tax" label="Impuesto / Régimen" />
-                    <CustomInput formName="taxCode" label="Código fiscal" />
-                  </div>
+                  <CustomInput formName="taxID" label="ID Fiscal" />
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
 
             <menu className="flex justify-end gap-3 mt-1">
               <DialogClose asChild>
-                <Button variant="outline" type="button">
-                  Cancelar
-                </Button>
+                <Button variant="outline" type="button">Cancelar</Button>
               </DialogClose>
               <Button type="submit" disabled={isPending}>
                 {isPending ? "Guardando..." : "Guardar"}

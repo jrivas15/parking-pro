@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import VehicleCountCard from "./components/VehicleCountCard";
 import { Button } from "@/components/ui/button";
@@ -25,6 +24,8 @@ import { formatNumByCommas } from "@/utils/formatNumber";
 import { useNavigate } from "react-router-dom";
 import CashCountDialog from "../tools/cashCount/CashCountDialog";
 import { Input } from "@/components/ui/input";
+import ParkingPrintDialog from "./components/ParkingPrintDialog";
+import RecentSalesDialog from "./components/RecentSalesDialog";
 
 const ParkingPage = () => {
   const {
@@ -43,7 +44,13 @@ const ParkingPage = () => {
     openCashCountDialog,
     setOpenCashCountDialog,
     plateFilter,
-    setPlateFilter
+    setPlateFilter,
+    lastSale,
+    openPrintDialog,
+    setOpenPrintDialog,
+    openRecentSalesDialog,
+    setOpenRecentSalesDialog,
+    handleSaleCompleted,
   } = useParking();
   const nav = useNavigate()
 
@@ -93,7 +100,7 @@ const ParkingPage = () => {
         </div>
         <div className="bg-sidebar overflow-y-auto p-3 flex flex-col gap-4 rounded-2xl w-80 shrink-0">
           <div
-            className=" bg-background text-center p-2 text-primary border border-primary rounded-2xl 
+            className=" bg-background text-center p-2 text-primary border border-primary rounded-2xl
           flex flex-col gap-2 shadow-primary shadow-sm"
           >
             <h2 className="text-lg tracking-[0.2em] text-foreground font-semibold">
@@ -122,7 +129,7 @@ const ParkingPage = () => {
           </div>
 
           <Separator className="mt-2" />
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setOpenRecentSalesDialog(true)}>
             <Dock /> Copia Recibo
           </Button>
           <Button disabled={!possiblePaymentData} onClick={() => {setOpenPaymentDialog(true)}}>
@@ -134,6 +141,7 @@ const ParkingPage = () => {
             setOpen={setOpenPaymentDialog}
             paymentData={possiblePaymentData}
             selectedMovement={selectedMovement}
+            onSaleCompleted={handleSaleCompleted}
           />
           <CashCountDialog open={openCashCountDialog} onOpenChange={setOpenCashCountDialog} />
         </div>
@@ -141,7 +149,7 @@ const ParkingPage = () => {
 
       <footer className="mx-6 bg-sidebar px-4 py-2 rounded-2xl flex justify-between items-center">
         <menu className="bg-background p-1 rounded-2xl flex gap-2">
-          <Button variant="ghost">
+          <Button variant="ghost" onClick={() => lastSale && setOpenPrintDialog(true)}>
             <Printer />
           </Button>
           <Button variant="ghost">
@@ -171,6 +179,16 @@ const ParkingPage = () => {
           </Button>
         </menu>
       </footer>
+
+      <ParkingPrintDialog
+        sale={lastSale}
+        open={openPrintDialog}
+        onOpenChange={setOpenPrintDialog}
+      />
+      <RecentSalesDialog
+        open={openRecentSalesDialog}
+        onOpenChange={setOpenRecentSalesDialog}
+      />
     </PageLayout>
   );
 };

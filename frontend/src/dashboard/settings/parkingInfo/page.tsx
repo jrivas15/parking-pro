@@ -1,5 +1,4 @@
 import CustomInput from "@/components/forms/CustomInput";
-import FormIntInput from "@/components/forms/FormIntInput";
 import FormSwitch from "@/components/forms/FormSwitch";
 import FormTextArea from "@/components/forms/FormTextArea";
 import BackBtn from "@/components/shared/BackBtn";
@@ -15,13 +14,89 @@ import {
   Printer,
   Receipt,
 } from "lucide-react";
-import { FormProvider } from "react-hook-form";
+import { FormProvider, useFormContext } from "react-hook-form";
 
 import useParkingInfo from "./hooks/useParkingInfo";
 import PageLayout from "@/layouts/PageLayout";
+import { useEffect, useState } from "react";
+import TicketPreviewDialog from "./components/TicketPreviewDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
+const PrinterCard = ({ disabled }: { disabled: boolean }) => {
+  const { setValue, watch } = useFormContext();
+  const [printers, setPrinters] = useState<{ name: string; displayName?: string }[]>([]);
+  const printerName = watch("printerName") as string;
+  const paperWidth = watch("paperWidth") as string;
+
+  useEffect(() => {
+    window.electronAPI?.getPrinters().then((list) => {
+      setPrinters(list ?? []);
+    });
+  }, []);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Printer className="text-primary" /> Impresora
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label>Impresora</Label>
+          <Select
+            disabled={disabled}
+            value={printerName ?? ""}
+            onValueChange={(v) => setValue("printerName", v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar impresora..." />
+            </SelectTrigger>
+            <SelectContent>
+              {printers.length === 0 && (
+                <SelectItem value="_none" disabled>
+                  Sin impresoras detectadas
+                </SelectItem>
+              )}
+              {printers.map((p) => (
+                <SelectItem key={p.name} value={p.name}>
+                  {p.displayName ?? p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label>Ancho de papel</Label>
+          <Select
+            disabled={disabled}
+            value={paperWidth ?? "80"}
+            onValueChange={(v) => setValue("paperWidth", v)}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="58">58 mm</SelectItem>
+              <SelectItem value="80">80 mm</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const ParkingInfo = () => {
   const { form, mode, handleEdit, handleCancel, onSubmit } = useParkingInfo();
+  const [openPreview, setOpenPreview] = useState(false);
 
   return (
     <PageLayout>
@@ -40,7 +115,7 @@ const ParkingInfo = () => {
 
       <FormProvider {...form}>
         <form
-          className="grid grid-cols-2 gap-2.5"
+          className="grid grid-cols-2 gap-2.5 overflow-y-auto flex-1 min-h-0 pb-4"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <Card>
@@ -142,15 +217,17 @@ const ParkingInfo = () => {
                 </div>
               </div>
               <menu className="grid grid-cols-2 gap-2 mt-2">
-                <Button variant="outline" type="button">
+                <Button variant="outline" type="button" onClick={() => setOpenPreview(true)}>
                   <Eye /> Previsualizar
                 </Button>
-                <Button variant="outline" type="button">
+                <Button variant="outline" type="button" onClick={() => setOpenPreview(true)}>
                   <Printer /> Imprimir
                 </Button>
               </menu>
             </CardContent>
           </Card>
+          <PrinterCard disabled={mode === "view"} />
+          <TicketPreviewDialog open={openPreview} onOpenChange={setOpenPreview} />
           <menu className="flex justify-between col-span-2 ">
             <div className="flex gap-3">
               <Button

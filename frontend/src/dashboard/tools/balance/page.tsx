@@ -227,20 +227,26 @@ const BalancePage = () => {
 
         {/* Summary cards */}
         <div className="flex gap-3">
-          {balanceStats?.byPaymentMethod.map((method) => (
-            <SummaryCard
-              key={method.paymentMethod__name}
-              label={method.paymentMethod__name}
-              value={formatMoney(method.total)}
-              sub={`${method.nSales} ${method.nSales === 1 ? "pago" : "pagos"}`}
-              subIcon={<TrendingUp size={12} />}
-              subColor="text-green-500"
-            />
-          ))}
+          {balanceStats?.byPaymentMethod.map((method) => {
+            const expense = balanceStats.expensesByPaymentMethod?.find(
+              (e) => e.paymentMethod__id === method.paymentMethod__id
+            );
+            const expenseTotal = Number(expense?.total ?? 0);
+            const net = Number(method.total) - expenseTotal;
+            return (
+              <SummaryCard
+                key={method.paymentMethod__name}
+                label={method.paymentMethod__name}
+                value={formatMoney(net)}
+                sub={expenseTotal > 0 ? `- ${formatMoney(expenseTotal)} en gastos` : `${method.nSales} ${method.nSales === 1 ? "pago" : "pagos"}`}
+                subIcon={expenseTotal > 0 ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
+                subColor={expenseTotal > 0 ? "text-red-500" : "text-green-500"}
+              />
+            );
+          })}
           <SummaryCard
             label="Gastos"
-            value="$0"
-            sub="Limpieza"
+            value={balanceStats?.totalExpenses ? formatMoney(Number(balanceStats.totalExpenses)) : "$0"}
             subIcon={<TrendingDown size={12} />}
             subColor="text-red-500"
           />

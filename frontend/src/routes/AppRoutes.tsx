@@ -17,6 +17,11 @@ import MonthlyPaymentPage from "@/dashboard/vehicles/monthlyPayment/page";
 import CreateVehiclePage from "@/dashboard/vehicles/vehicle/page";
 import ClientsPage from "@/dashboard/customers/page";
 import CustomersListPage from "@/dashboard/customers/customer/page";
+import ExpensesPage from "@/dashboard/tools/expenses/page";
+import VipPage from "@/dashboard/vehicles/vip/page";
+import AdministrationPage from "@/dashboard/administration/page";
+import ReportsPage from "@/dashboard/administration/reports/page";
+import SalesClosingsPage from "@/dashboard/administration/salesClosings/page";
 
 export const routes = [
   {
@@ -45,4 +50,9 @@ export const routes = [
   { path: "/vehicles/vehiculos", component: <CreateVehiclePage /> },
   { path: "/clients", component: <ClientsPage /> },
   { path: "/clients/clientes", component: <CustomersListPage /> },
+  { path: "/tools/expenses", component: <ExpensesPage /> },
+  { path: "/vehicles/vip", component: <VipPage /> },
+  { path: "/administration", component: <AdministrationPage /> },
+  { path: "/administration/reports", component: <ReportsPage /> },
+  { path: "/administration/sales-closings", component: <SalesClosingsPage /> },
 ];

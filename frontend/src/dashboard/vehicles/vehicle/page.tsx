@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Car, Pencil, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/shared/DataTable";
 import PageLayout from "@/layouts/PageLayout";
 import BackBtn from "@/components/shared/BackBtn";
@@ -15,10 +16,6 @@ import useVehicles from "./hooks/useVehicles";
 import { Vehicle } from "./types/vehicle.type";
 
 const VEHICLE_TYPE_LABEL: Record<string, string> = { C: "Carro", M: "Moto", B: "Bici" };
-const COLOR_LABEL: Record<string, string> = {
-  blanco: "Blanco", negro: "Negro", gris: "Gris", plata: "Plata",
-  rojo: "Rojo", azul: "Azul", verde: "Verde", amarillo: "Amarillo", otro: "Otro",
-};
 
 const VehiclesListPage = () => {
   const { listVehicles } = useVehiclesQuery();
@@ -52,24 +49,24 @@ const VehiclesListPage = () => {
     {
       header: "Vehículo",
       cell: (info) => {
-        const { brand, model, year, color } = info.row.original;
+        const { brand, color } = info.row.original;
         return (
           <div className="flex flex-col text-sm leading-5">
-            <span className="font-medium">{brand} {model}</span>
-            <span className="text-muted-foreground">{year} · {COLOR_LABEL[color] ?? color}</span>
+            <span className="font-medium">{brand ?? "—"}</span>
+            <span className="text-muted-foreground">{color ?? "—"}</span>
           </div>
         );
       },
     },
     {
-      accessorKey: "ownerName",
-      header: "Propietario",
+      header: "Cliente",
       cell: (info) => {
-        const { ownerName, ownerPhone } = info.row.original;
+        const { customerData } = info.row.original;
+        if (!customerData) return <span className="text-muted-foreground text-sm">—</span>;
         return (
           <div className="flex flex-col text-sm leading-5">
-            <span className="font-medium">{ownerName}</span>
-            <span className="text-muted-foreground">{ownerPhone}</span>
+            <span className="font-medium">{customerData.name}</span>
+            <span className="text-muted-foreground">{customerData.phone ?? "—"}</span>
           </div>
         );
       },
@@ -77,9 +74,24 @@ const VehiclesListPage = () => {
     {
       header: "Documento",
       cell: (info) => {
-        const { docType, ownerDoc } = info.row.original;
-        return <span className="text-sm">{docType}: {ownerDoc}</span>;
+        const { customerData } = info.row.original;
+        if (!customerData) return <span className="text-muted-foreground text-sm">—</span>;
+        return (
+          <span className="text-sm text-muted-foreground">
+            {customerData.documentType}: {customerData.nDoc}
+          </span>
+        );
       },
+    },
+    {
+      accessorKey: "isActive",
+      header: "Estado",
+      cell: (info) =>
+        info.getValue() ? (
+          <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-500">Activo</Badge>
+        ) : (
+          <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive">Inactivo</Badge>
+        ),
     },
     {
       id: "actions",
@@ -122,9 +134,7 @@ const VehiclesListPage = () => {
         />
       </header>
       <Separator className="my-2" />
-      <div>
-        <DataTable columns={columns} data={listVehicles ?? []} />
-      </div>
+      <DataTable columns={columns} data={listVehicles ?? []} />
       <ConfirmDialog
         open={openConfirm}
         setOpen={setOpenConfirm}
@@ -137,4 +147,3 @@ const VehiclesListPage = () => {
 };
 
 export default VehiclesListPage;
-

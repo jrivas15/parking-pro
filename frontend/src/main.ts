@@ -1,6 +1,7 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+import { PosPrinter } from 'electron-pos-printer';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -52,5 +53,20 @@ app.on('activate', () => {
   }
 });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+// IPC: Get available printers
+ipcMain.handle('get-printers', async () => {
+  const win = BrowserWindow.getAllWindows()[0];
+  if (!win) return [];
+  return win.webContents.getPrintersAsync();
+});
+
+// IPC: Print ticket via electron-pos-printer
+ipcMain.handle('print-ticket', async (_event, data, options) => {
+  await PosPrinter.print(data, {
+    printerName: options.printerName,
+    width: options.paperWidth === '58' ? '58mm' : '80mm',
+    preview: options.preview ?? false,
+    silent: !(options.preview ?? false),
+    margin: '0 0 0 0',
+  });
+});

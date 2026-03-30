@@ -2,30 +2,28 @@ import { z } from "zod";
 
 export const customerSchema = z.object({
   name:         z.string().min(1, "El nombre es requerido"),
-  customerType: z.enum(["NATURAL", "JURIDICA"]),
-  documentType:      z.enum(["CC", "NIT"]),
-  nDoc:          z.string().min(1, "El documento es requerido"),
+  personType:   z.enum(["NATURAL", "JURIDICA"]),
+  documentType: z.enum(["CC", "NIT", "CE"]),
+  nDoc:         z.coerce.number("El documento es requerido").min(1, "El documente debe tener al menos 5 dígitos"),
   phone:        z.string().optional(),
-  address :      z.string().optional(),
+  address:      z.string().optional(),
   postalCode:   z.string().optional(),
-  location: z.number().optional(),
-  email:        z.email("Correo inválido"),
-  tax:        z.string().optional(),
-  taxCode:    z.string().optional(),
+  location:     z.number().nullable().optional(),
+  email:        z.email("Correo inválido").optional().or(z.literal("")),
+  taxID:        z.coerce.number().nullable().optional(),
 });
 
 export type CustomerFormData = z.infer<typeof customerSchema>;
 
 export const defaultValues: CustomerFormData = {
   name:         "",
-  documentType:      "CC",
-  nDoc:          "",
+  personType:   "NATURAL",
+  documentType: "CC",
+  nDoc:         0,
   phone:        "",
+  address:      "",
+  postalCode:   "",
+  location:     null,
   email:        "",
-  customerType: "NATURAL",
-  address: "",
-  postalCode: "",
-  location: null,
-  tax: "",
-  taxCode: "",
+  taxID:        null,
 };

@@ -24,12 +24,14 @@ import { formatNumByCommas } from "@/utils/formatNumber";
 import { ConfirmDialog } from "@/components/dialogs/ConfimDialog";
 import CustomerSearchDialog from "./CustomerSearchDialog";
 import usePaymentForm from "../hooks/usePaymentForm";
+import { SaleReceipt } from "../types/sale.type";
 
 interface Props {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   paymentData: PaymentData | null;
   selectedMovement: Movement | null;
+  onSaleCompleted?: (sale: SaleReceipt) => void;
 }
 
 const PaymentDialog = ({
@@ -37,6 +39,7 @@ const PaymentDialog = ({
   setOpen,
   paymentData,
   selectedMovement,
+  onSaleCompleted,
 }: Props) => {
   const {
     form,
@@ -51,7 +54,7 @@ const PaymentDialog = ({
     handleSelectCustomer,
     handleClearCustomer,
     handleExactAmount,
-  } = usePaymentForm({ open, selectedMovement, setOpen });
+  } = usePaymentForm({ open, selectedMovement, setOpen, onSaleCompleted });
 
   const { data: tariffs } = useTariffQuery();
   const { listPaymentMethods: paymentMethods } = usePaymentMethodsQuery();

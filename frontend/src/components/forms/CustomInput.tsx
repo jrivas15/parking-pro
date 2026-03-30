@@ -10,10 +10,11 @@ interface CustomInputProps {
     disabled?: boolean
     readOnly?: boolean
     autoFocus?: boolean
+    uppercase?: boolean
 }
 
 
-const CustomInput = ({formName, label, type='text', disabled, readOnly, autoFocus=false}:CustomInputProps) => {
+const CustomInput = ({formName, label, type='text', disabled, readOnly, autoFocus=false, uppercase=false}:CustomInputProps) => {
  const {control} = useFormContext()
 
 
@@ -23,7 +24,17 @@ const CustomInput = ({formName, label, type='text', disabled, readOnly, autoFocu
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} className=''>
                 <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-                <Input {...field} type={type} name={field.name} id={field.name} disabled={disabled} readOnly={readOnly} autoFocus={autoFocus} className={readOnly ? 'bg-muted cursor-default' : ''} />
+                <Input
+                  {...field}
+                  type={type}
+                  name={field.name}
+                  id={field.name}
+                  disabled={disabled}
+                  readOnly={readOnly}
+                  autoFocus={autoFocus}
+                  className={readOnly ? 'bg-muted cursor-default' : ''}
+                  onChange={(e) => field.onChange(uppercase ? e.target.value.toUpperCase() : e.target.value)}
+                />
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}

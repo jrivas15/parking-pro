@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -20,6 +20,8 @@ import { vehicleSchema, defaultValues, VehicleFormData } from "../schemas/vehicl
 import useVehicleMutation from "../hooks/useVehicleMutation";
 import { Vehicle } from "../types/vehicle.type";
 import { VEHICLE_TYPES, COLORS } from "@/data/optionData";
+import { Customer } from "@/dashboard/customers/customer/types/customer.type";
+import CustomerSearchDialog from "./CustomerSearchDialog";
 
 const VehicleTypePicker = ({
   value,
@@ -48,7 +50,6 @@ const VehicleTypePicker = ({
   </div>
 );
 
-// ─── Dialog ───────────────────────────────────────────────────────────────────
 interface VehicleFormDialogProps {
   initialData?: Vehicle | null;
   open: boolean;
@@ -57,11 +58,21 @@ interface VehicleFormDialogProps {
 
 const VehicleFormDialog = ({ initialData, open, setOpen }: VehicleFormDialogProps) => {
   const { newVehicleMutation, updateVehicleMutation } = useVehicleMutation();
+  const [customerSearchOpen, setCustomerSearchOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   const form = useForm<VehicleFormData>({
     resolver: zodResolver(vehicleSchema),
     defaultValues: initialData
-      ? { ...initialData }
+      ? {
+          plate: initialData.plate,
+          vehicleType: initialData.vehicleType,
+          brand: initialData.brand ?? "",
+          color: initialData.color ?? "",
+          isActive: initialData.isActive,
+          description: initialData.description ?? "",
+          customer: initialData.customer ?? null,
+        }
       : defaultValues,
   });
 
@@ -75,21 +86,42 @@ const VehicleFormDialog = ({ initialData, open, setOpen }: VehicleFormDialogProp
     }
   };
 
-  // Close on success
   useEffect(() => {
     if (newVehicleMutation.isSuccess || updateVehicleMutation.isSuccess) {
       setOpen(false);
     }
   }, [newVehicleMutation.isSuccess, updateVehicleMutation.isSuccess]);
 
-  // Sync form when initialData changes
   useEffect(() => {
     if (initialData) {
-      form.reset({ ...initialData });
+      form.reset({
+        plate: initialData.plate,
+        vehicleType: initialData.vehicleType,
+        brand: initialData.brand ?? "",
+        color: initialData.color ?? "",
+        isActive: initialData.isActive,
+        description: initialData.description ?? "",
+        customer: initialData.customer ?? null,
+      });
+      setSelectedCustomer(initialData.customerData
+        ? { id: initialData.customer!, name: initialData.customerData.name, documentType: initialData.customerData.documentType, nDoc: initialData.customerData.nDoc, phone: initialData.customerData.phone, address: null, postalCode: null, location: null, email: null, taxID: null }
+        : null
+      );
     } else {
       form.reset(defaultValues);
+      setSelectedCustomer(null);
     }
   }, [initialData]);
+
+  const handleSelectCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    form.setValue("customer", customer.id, { shouldValidate: true });
+  };
+
+  const handleClearCustomer = () => {
+    setSelectedCustomer(null);
+    form.setValue("customer", null);
+  };
 
   const isPending = newVehicleMutation.isPending || updateVehicleMutation.isPending;
 
@@ -131,7 +163,7 @@ const VehicleFormDialog = ({ initialData, open, setOpen }: VehicleFormDialogProp
 
             {/* Datos del vehículo */}
             <div className="grid grid-cols-2 gap-3">
-              <CustomInput formName="plate" label="Placa" />
+              <CustomInput formName="plate" label="Placa" uppercase />
               <FormSelect
                 formName="color"
                 label="Color"
@@ -143,10 +175,36 @@ const VehicleFormDialog = ({ initialData, open, setOpen }: VehicleFormDialogProp
 
             <Separator />
 
+            {/* Cliente asociado */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm font-medium">Cliente asociado</span>
+              <div className="flex gap-2 items-center">
+                <div className="flex h-9 flex-1 items-center rounded-md border border-input bg-muted px-3 text-sm">
+                  {selectedCustomer ? (
+                    <span className="font-medium">
+                      {selectedCustomer.name}
+                      <span className="text-muted-foreground font-normal ml-2">
+                        {selectedCustomer.documentType}: {selectedCustomer.nDoc}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">Sin cliente (opcional)</span>
+                  )}
+                </div>
+                {selectedCustomer && (
+                  <Button type="button" variant="ghost" size="icon" onClick={handleClearCustomer}>
+                    <X className="size-4" />
+                  </Button>
+                )}
+                <Button type="button" variant="outline" size="icon" onClick={() => setCustomerSearchOpen(true)}>
+                  <Search className="size-4" />
+                </Button>
+              </div>
+            </div>
 
             <FormTextArea
-              formName="notes"
-              label="Notas"
+              formName="description"
+              label="Descripción"
               placeholder="Observaciones, convenios especiales, etc."
               rows={2}
             />
@@ -163,6 +221,12 @@ const VehicleFormDialog = ({ initialData, open, setOpen }: VehicleFormDialogProp
           </form>
         </FormProvider>
       </DialogContent>
+
+      <CustomerSearchDialog
+        open={customerSearchOpen}
+        onOpenChange={setCustomerSearchOpen}
+        onSelect={handleSelectCustomer}
+      />
     </Dialog>
   );
 };

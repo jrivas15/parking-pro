@@ -30,19 +30,19 @@ const CustomersListPage = () => {
     {
       header: "Cliente",
       cell: (info) => {
-        const { name, customerType } = info.row.original;
+        const { name, personType } = info.row.original;
         return (
           <div className="flex flex-col text-sm leading-5">
             <span className="font-medium">{name}</span>
             <Badge
               variant="outline"
               className={`w-fit mt-0.5 text-xs ${
-                customerType === "JURIDICA"
+                personType === "JURIDICA"
                   ? "border-blue-500/30 bg-blue-500/10 text-blue-400"
                   : "border-green-500/30 bg-green-500/10 text-green-500"
               }`}
             >
-              {customerType === "JURIDICA" ? "Jurídica" : "Natural"}
+              {personType === "JURIDICA" ? "Jurídica" : "Natural"}
             </Badge>
           </div>
         );
@@ -51,23 +51,23 @@ const CustomersListPage = () => {
     {
       header: "Documento",
       cell: (info) => {
-        const { docType, doc } = info.row.original;
-        return <span className="text-sm text-muted-foreground">{docType}: {doc}</span>;
+        const { documentType, nDoc } = info.row.original;
+        return <span className="text-sm text-muted-foreground">{documentType}: {nDoc}</span>;
       },
     },
     {
       accessorKey: "phone",
       header: "Teléfono",
-      cell: (info) => <span className="text-sm text-muted-foreground">{info.getValue() as string}</span>,
+      cell: (info) => <span className="text-sm text-muted-foreground">{(info.getValue() as string) || "—"}</span>,
     },
     {
       accessorKey: "email",
       header: "Correo",
-      cell: (info) => <span className="text-sm text-muted-foreground">{info.getValue() as string}</span>,
+      cell: (info) => <span className="text-sm text-muted-foreground">{(info.getValue() as string) || "—"}</span>,
     },
     {
-      accessorKey: "notes",
-      header: "Notas",
+      accessorKey: "address",
+      header: "Dirección",
       cell: (info) => (
         <span className="text-xs text-muted-foreground italic truncate max-w-36 block">
           {(info.getValue() as string) || "—"}
@@ -115,9 +115,7 @@ const CustomersListPage = () => {
         />
       </header>
       <Separator className="my-2" />
-      <div>
-        <DataTable columns={columns} data={listCustomers ?? []} />
-      </div>
+      <DataTable columns={columns} data={listCustomers ?? []} />
       <ConfirmDialog
         open={openConfirm}
         setOpen={setOpenConfirm}

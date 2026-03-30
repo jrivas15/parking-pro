@@ -1,14 +1,17 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Movement, PaymentData } from "../types/movements.type";
 import useMovementQuery from "./useMovementQuery";
 import useMovementMutation from "./useMovementMutation";
 import { sileo } from "sileo";
 import Plate from "../components/Plate";
-import { Bike, Calendar, Car, Info, Motorbike, Printer } from "lucide-react";
+import { Calendar, Info, Printer } from "lucide-react";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import VehicleIcon from "@/components/shared/VehicleIcon";
+import { SaleReceipt } from "../types/sale.type";
+import useParkingInfoQuery from "@/dashboard/settings/parkingInfo/hooks/useParkingInfoQuery";
+import { buildEntryTicketData } from "@/utils/buildEntryTicketData";
 
 const lastExitsColumns: ColumnDef<Movement>[] = [
   {
@@ -81,10 +84,10 @@ const lastExitsColumns: ColumnDef<Movement>[] = [
             </Button>
           </div>
         );
-       
+
   }
   }
-  
+
 ];
 
 const useParking = () => {
@@ -100,7 +103,12 @@ const useParking = () => {
     useState<PaymentData | null>(null);
 
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
+  const [lastSale, setLastSale] = useState<SaleReceipt | null>(null);
+  const [openPrintDialog, setOpenPrintDialog] = useState(false);
+  const [openRecentSalesDialog, setOpenRecentSalesDialog] = useState(false);
+
   //*querys
+  const { parkingInfoQuery } = useParkingInfoQuery();
   const { movementQuery, movementPaymentQuery, lastExitMovementsQuery } =
     useMovementQuery({
       plate: selectedMovement?.plate,
@@ -116,13 +124,10 @@ const useParking = () => {
 
   useEffect(() => {
     if (selectedMovement) {
-
-      // console.log('selected mov', selectedMovement)
-
       if (movementPaymentQuery.data) {
         setPossiblePaymentData(movementPaymentQuery.data);
         setPlate(selectedMovement.plate);
-      } 
+      }
       else {
         setPossiblePaymentData(null);
         setPlate("");
@@ -156,17 +161,33 @@ const useParking = () => {
     return movements.filter(m => m.plate.includes(filter) || m.nTicket.toString().includes(filter))
   }
 
+  const handleSaleCompleted = (sale: SaleReceipt) => {
+    setLastSale(sale);
+    setOpenPrintDialog(true);
+  };
+
+  const printEntryTicket = (movement: Movement) => {
+    const info = parkingInfoQuery.data;
+    if (!info) return;
+    const data = buildEntryTicketData(movement, info);
+    window.electronAPI?.printTicket(data, {
+      printerName: info.printerName || undefined,
+      paperWidth: info.paperWidth ?? "80",
+      preview: false,
+    });
+  };
 
   const handleNewVehicleEntry = () =>
     newMovementMutation.mutate(
       { plate },
       {
+        onSuccess: (movement: Movement) => {
+          printEntryTicket(movement);
+        },
         onError: (error) => {
           const dataResponse = error?.response?.data as Movement[];
           if (error?.response?.status === 409) {
-            // console.log(error.response.data);
             if (dataResponse.length === 1) {
-              // console.log(dataResponse[0])
               setSelectedMovement(dataResponse[0]);
               setPlate(dataResponse[0].plate);
             }
@@ -180,8 +201,6 @@ const useParking = () => {
         },
       },
     );
-
-    // useEffect(() => {console.log(plate)},[plate])
 
   return {
     plate,
@@ -199,7 +218,13 @@ const useParking = () => {
     openCashCountDialog,
     setOpenCashCountDialog,
     plateFilter,
-    setPlateFilter
+    setPlateFilter,
+    lastSale,
+    openPrintDialog,
+    setOpenPrintDialog,
+    openRecentSalesDialog,
+    setOpenRecentSalesDialog,
+    handleSaleCompleted,
   };
 };
 
