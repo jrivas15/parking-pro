@@ -17,8 +17,6 @@ export const parkingInfoSchema = z.object({
     ticketHeader: z.string().nullable().optional().transform(v => v ?? ""),
     includeBasicRules: z.boolean().nullable().optional().transform(v => v ?? false),
     ticketFooter: z.string().nullable().optional().transform(v => v ?? ""),
-    printerName: z.string().nullable().optional().transform(v => v ?? ""),
-    paperWidth: z.string().nullable().optional().transform(v => v ?? "80").pipe(z.enum(["58", "80"])),
 })
 
 export const defaultValues = {
@@ -36,8 +34,6 @@ export const defaultValues = {
     includeBasicRules: false,
     includeParkingInfo: false,
     ticketFooter: "",
-    printerName: "",
-    paperWidth: "80" as const,
 }
 
 export type ParkingInfoFormType = z.infer<typeof parkingInfoSchema>

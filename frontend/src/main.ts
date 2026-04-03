@@ -62,11 +62,15 @@ ipcMain.handle('get-printers', async () => {
 
 // IPC: Print ticket via electron-pos-printer
 ipcMain.handle('print-ticket', async (_event, data, options) => {
+  const isPreview = options.preview ?? false;
+  const hasPrinter = !!(options.printerName);
+  console.log(options)
   await PosPrinter.print(data, {
     printerName: options.printerName,
     width: options.paperWidth === '58' ? '58mm' : '80mm',
-    preview: options.preview ?? false,
-    silent: !(options.preview ?? false),
+    preview: isPreview || !hasPrinter,
+    silent: !isPreview && hasPrinter,
     margin: '0 0 0 0',
+    boolean: true
   });
 });

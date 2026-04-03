@@ -22,6 +22,7 @@ import VipPage from "@/dashboard/vehicles/vip/page";
 import AdministrationPage from "@/dashboard/administration/page";
 import ReportsPage from "@/dashboard/administration/reports/page";
 import SalesClosingsPage from "@/dashboard/administration/salesClosings/page";
+import PrinterSettingsPage from "@/dashboard/settings/printer/page";
 
 export const routes = [
   {
@@ -55,4 +56,5 @@ export const routes = [
   { path: "/administration", component: <AdministrationPage /> },
   { path: "/administration/reports", component: <ReportsPage /> },
   { path: "/administration/sales-closings", component: <SalesClosingsPage /> },
+  { path: "/settings/printer", component: <PrinterSettingsPage /> },
 ];

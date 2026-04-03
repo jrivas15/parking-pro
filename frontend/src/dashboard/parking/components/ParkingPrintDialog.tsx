@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { SaleReceipt } from "../types/sale.type";
 import useParkingInfoQuery from "@/dashboard/settings/parkingInfo/hooks/useParkingInfoQuery";
 import { buildTicketData } from "@/utils/buildTicketData";
+import { usePrinterPreferences } from "@/hooks/usePrinterPreferences";
 
 interface Props {
   sale: SaleReceipt | null;
@@ -22,13 +23,14 @@ const money = (n: number) =>
 const ParkingPrintDialog = ({ sale, open, onOpenChange }: Props) => {
   const { parkingInfoQuery } = useParkingInfoQuery();
   const info = parkingInfoQuery.data;
+  const { prefs } = usePrinterPreferences();
 
   const handlePrint = async (preview = false) => {
     if (!sale || !info) return;
     const data = buildTicketData(sale, info);
     await window.electronAPI?.printTicket(data, {
-      printerName: info.printerName || undefined,
-      paperWidth: info.paperWidth ?? "80",
+      printerName: prefs.printerName || undefined,
+      paperWidth: prefs.paperWidth,
       preview,
     });
   };

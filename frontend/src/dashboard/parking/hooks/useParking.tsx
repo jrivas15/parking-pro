@@ -12,6 +12,8 @@ import VehicleIcon from "@/components/shared/VehicleIcon";
 import { SaleReceipt } from "../types/sale.type";
 import useParkingInfoQuery from "@/dashboard/settings/parkingInfo/hooks/useParkingInfoQuery";
 import { buildEntryTicketData } from "@/utils/buildEntryTicketData";
+import { buildTicketData } from "@/utils/buildTicketData";
+import { usePrinterPreferences } from "@/hooks/usePrinterPreferences";
 
 const lastExitsColumns: ColumnDef<Movement>[] = [
   {
@@ -109,6 +111,13 @@ const useParking = () => {
 
   //*querys
   const { parkingInfoQuery } = useParkingInfoQuery();
+  const { prefs, toggleAutoPrint } = usePrinterPreferences();
+
+  const printerOpts = {
+    printerName: prefs.printerName || undefined,
+    paperWidth: prefs.paperWidth,
+    preview: false as const,
+  };
   const { movementQuery, movementPaymentQuery, lastExitMovementsQuery } =
     useMovementQuery({
       plate: selectedMovement?.plate,
@@ -163,18 +172,23 @@ const useParking = () => {
 
   const handleSaleCompleted = (sale: SaleReceipt) => {
     setLastSale(sale);
-    setOpenPrintDialog(true);
+    if (prefs.autoPrint) {
+      printExitTicket(sale);
+    } else {
+      setOpenPrintDialog(true);
+    }
+  };
+
+  const printExitTicket = (sale: SaleReceipt) => {
+    const info = parkingInfoQuery.data;
+    if (!info) return;
+    window.electronAPI?.printTicket(buildTicketData(sale, info), printerOpts);
   };
 
   const printEntryTicket = (movement: Movement) => {
     const info = parkingInfoQuery.data;
-    if (!info) return;
-    const data = buildEntryTicketData(movement, info);
-    window.electronAPI?.printTicket(data, {
-      printerName: info.printerName || undefined,
-      paperWidth: info.paperWidth ?? "80",
-      preview: false,
-    });
+    if (!info || !prefs.autoPrint) return;
+    window.electronAPI?.printTicket(buildEntryTicketData(movement, info), printerOpts);
   };
 
   const handleNewVehicleEntry = () =>
@@ -225,6 +239,8 @@ const useParking = () => {
     openRecentSalesDialog,
     setOpenRecentSalesDialog,
     handleSaleCompleted,
+    autoPrint: prefs.autoPrint,
+    toggleAutoPrint,
   };
 };
 

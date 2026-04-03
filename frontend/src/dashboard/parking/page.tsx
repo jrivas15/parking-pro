@@ -51,6 +51,8 @@ const ParkingPage = () => {
     openRecentSalesDialog,
     setOpenRecentSalesDialog,
     handleSaleCompleted,
+    autoPrint,
+    toggleAutoPrint,
   } = useParking();
   const nav = useNavigate()
 
@@ -149,7 +151,11 @@ const ParkingPage = () => {
 
       <footer className="mx-6 bg-sidebar px-4 py-2 rounded-2xl flex justify-between items-center">
         <menu className="bg-background p-1 rounded-2xl flex gap-2">
-          <Button variant="ghost" onClick={() => lastSale && setOpenPrintDialog(true)}>
+          <Button
+            variant={autoPrint ? "default" : "ghost"}
+            onClick={toggleAutoPrint}
+            title={autoPrint ? "Impresión automática activa" : "Impresión automática desactivada"}
+          >
             <Printer />
           </Button>
           <Button variant="ghost">
