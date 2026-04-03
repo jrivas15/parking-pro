@@ -4,7 +4,10 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  getPrinters: () => ipcRenderer.invoke('get-printers'),
+  print: (payload: unknown) => ipcRenderer.invoke('printer:print', payload),
+  testPrint: () => ipcRenderer.invoke('printer:test'),
+  /** @deprecated use print() */
   printTicket: (data: unknown[], options: unknown) =>
     ipcRenderer.invoke('print-ticket', data, options),
-  getPrinters: () => ipcRenderer.invoke('get-printers'),
 });

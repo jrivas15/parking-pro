@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import VehicleIcon from "@/components/shared/VehicleIcon";
 import { SaleReceipt } from "../types/sale.type";
 import useParkingInfoQuery from "@/dashboard/settings/parkingInfo/hooks/useParkingInfoQuery";
-import { buildEntryTicketData } from "@/utils/buildEntryTicketData";
-import { buildTicketData } from "@/utils/buildTicketData";
 import { usePrinterPreferences } from "@/hooks/usePrinterPreferences";
 
 const lastExitsColumns: ColumnDef<Movement>[] = [
@@ -113,11 +111,6 @@ const useParking = () => {
   const { parkingInfoQuery } = useParkingInfoQuery();
   const { prefs, toggleAutoPrint } = usePrinterPreferences();
 
-  const printerOpts = {
-    printerName: prefs.printerName || undefined,
-    paperWidth: prefs.paperWidth,
-    preview: false as const,
-  };
   const { movementQuery, movementPaymentQuery, lastExitMovementsQuery } =
     useMovementQuery({
       plate: selectedMovement?.plate,
@@ -182,13 +175,22 @@ const useParking = () => {
   const printExitTicket = (sale: SaleReceipt) => {
     const info = parkingInfoQuery.data;
     if (!info) return;
-    window.electronAPI?.printTicket(buildTicketData(sale, info), printerOpts);
+    window.electronAPI?.print({ type: 'exit', sale, info });
   };
 
   const printEntryTicket = (movement: Movement) => {
     const info = parkingInfoQuery.data;
     if (!info || !prefs.autoPrint) return;
-    window.electronAPI?.printTicket(buildEntryTicketData(movement, info), printerOpts);
+    window.electronAPI?.print({
+      type: 'entry',
+      movement: {
+        nTicket: movement.nTicket,
+        plate: movement.plate,
+        vehicleType: movement.vehicleType,
+        entryTime: new Date(movement.entryTime).toISOString(),
+      },
+      info,
+    });
   };
 
   const handleNewVehicleEntry = () =>

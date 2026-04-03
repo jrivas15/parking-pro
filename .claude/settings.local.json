@@ -3,7 +3,8 @@
     "allow": [
       "Bash(xargs grep:*)",
       "Bash(find /c/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -type f \\\\\\(-name *route* -o -name *router* \\\\\\))",
-      "Bash(find /c/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -type f -name *AppRoutes* -o -name *routes*)"
+      "Bash(find /c/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -type f -name *AppRoutes* -o -name *routes*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

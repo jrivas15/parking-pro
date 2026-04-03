@@ -1,7 +1,9 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
-import { PosPrinter } from 'electron-pos-printer';
+import { printTicket } from './main/printer';
+import { generateQR } from './main/qr';
+import { buildEntryHTML, buildExitHTML } from './main/ticketTemplate';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -60,17 +62,28 @@ ipcMain.handle('get-printers', async () => {
   return win.webContents.getPrintersAsync();
 });
 
-// IPC: Print ticket via electron-pos-printer
-ipcMain.handle('print-ticket', async (_event, data, options) => {
-  const isPreview = options.preview ?? false;
-  const hasPrinter = !!(options.printerName);
-  console.log(options)
-  await PosPrinter.print(data, {
-    printerName: options.printerName,
-    width: options.paperWidth === '58' ? '58mm' : '80mm',
-    preview: isPreview || !hasPrinter,
-    silent: !isPreview && hasPrinter,
-    margin: '0 0 0 0',
-    boolean: true
-  });
+// IPC: Print ticket (hidden-window approach)
+ipcMain.handle('printer:print', async (_event, payload: EntryPrintPayload | ExitPrintPayload) => {
+  const { info } = payload;
+  let htmlContent: string;
+
+  if (payload.type === 'entry') {
+    const qrDataUrl = info.includeQRCode ? await generateQR(payload.movement.plate) : undefined;
+    htmlContent = buildEntryHTML(payload, qrDataUrl);
+  } else {
+    htmlContent = buildExitHTML(payload);
+  }
+
+  return printTicket(htmlContent, info.printerName ?? '', info.paperWidth ?? '80');
+});
+
+// IPC: Test print
+ipcMain.handle('printer:test', async () => {
+  const testPayload: EntryPrintPayload = {
+    type: 'entry',
+    movement: { nTicket: 1, plate: 'ABC123', vehicleType: 'C', entryTime: new Date().toISOString() },
+    info: { name: 'Test Parqueadero', paperWidth: '80' },
+  };
+  const htmlContent = buildEntryHTML(testPayload);
+  return printTicket(htmlContent, '', '80');
 });
