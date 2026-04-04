@@ -227,6 +227,10 @@ const BalancePage = () => {
 
         {/* Summary cards */}
         <div className="flex gap-3">
+          <SummaryCard
+            label="Número de ventas"
+            value={balanceStats?.nSales != null ? `${balanceStats.nSales}` : "—"}
+          />
           {balanceStats?.byPaymentMethod.map((method) => {
             const expense = balanceStats.expensesByPaymentMethod?.find(
               (e) => e.paymentMethod__id === method.paymentMethod__id

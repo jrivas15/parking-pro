@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import VehicleCountCard from "./components/VehicleCountCard";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import CashCountDialog from "../tools/cashCount/CashCountDialog";
 import { Input } from "@/components/ui/input";
 import ParkingPrintDialog from "./components/ParkingPrintDialog";
 import RecentSalesDialog from "./components/RecentSalesDialog";
+import CorrectPlateDialog from "./components/CorrectPlateDialog";
 
 const ParkingPage = () => {
   const {
@@ -53,8 +55,10 @@ const ParkingPage = () => {
     handleSaleCompleted,
     autoPrint,
     toggleAutoPrint,
+    reprintEntryTicket,
   } = useParking();
   const nav = useNavigate()
+  const [openCorrectPlateDialog, setOpenCorrectPlateDialog] = useState(false)
 
   return (
     <PageLayout>
@@ -89,6 +93,7 @@ const ParkingPage = () => {
                 setSelectedMovement(movement);
                 setOpenPaymentDialog(true);
               }}
+              onPrintMovement={reprintEntryTicket}
             />
             </section>
           <section className="flex flex-col gap-2 h-[30%] shrink-0 overflow-hidden">
@@ -163,7 +168,12 @@ const ParkingPage = () => {
           </Button>
         </menu>
         <menu className="flex gap-2">
-          <Button variant="outline">
+          <Button
+            variant="outline"
+            onClick={() => setOpenCorrectPlateDialog(true)}
+            disabled={!selectedMovement}
+            title={!selectedMovement ? "Selecciona un vehículo de la tabla primero" : "Corregir placa del vehículo seleccionado"}
+          >
             <Pencil className="text-yellow-800" />
             Corregir placa
           </Button>
@@ -186,6 +196,11 @@ const ParkingPage = () => {
         </menu>
       </footer>
 
+      <CorrectPlateDialog
+        open={openCorrectPlateDialog}
+        onOpenChange={setOpenCorrectPlateDialog}
+        movement={selectedMovement}
+      />
       <ParkingPrintDialog
         sale={lastSale}
         open={openPrintDialog}

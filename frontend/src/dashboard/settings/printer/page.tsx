@@ -87,16 +87,33 @@ const PrinterSettingsPage = () => {
             </Select>
           </div>
 
+          <Separator />
+
+          <p className="text-sm font-medium">Impresión automática</p>
+
           <div className="flex items-center justify-between">
             <div>
-              <Label>Impresión automática</Label>
+              <Label>Ticket de entrada</Label>
               <p className="text-xs text-muted-foreground">
-                Imprime tickets de entrada y salida sin confirmación manual
+                Imprime automáticamente al registrar un ingreso
               </p>
             </div>
             <Switch
-              checked={prefs.autoPrint}
-              onCheckedChange={(v) => setPrefs({ autoPrint: v })}
+              checked={prefs.autoPrintEntry}
+              onCheckedChange={(v) => setPrefs({ autoPrintEntry: v })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Ticket de salida</Label>
+              <p className="text-xs text-muted-foreground">
+                Imprime automáticamente al registrar una salida
+              </p>
+            </div>
+            <Switch
+              checked={prefs.autoPrintExit}
+              onCheckedChange={(v) => setPrefs({ autoPrintExit: v })}
             />
           </div>
         </CardContent>

@@ -20,12 +20,13 @@ import { useForm, Controller, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PaymentMethod } from "@/dashboard/settings/paymentMethods/types/paymentMethod.type";
-import { ExpenseFormData } from "./types/expenses.type";
+import { ExpenseFormData, EXPENSE_TYPES } from "./types/expenses.type";
 import FormDecimalInput from "@/components/forms/FormDecimalInput";
 
 const schema = z.object({
     description: z.string().min(1, "La descripción es obligatoria"),
     value: z.coerce.number().min(1, "El valor debe ser mayor a 0"),
+    expenseType: z.enum(EXPENSE_TYPES, { required_error: "El tipo es obligatorio" }),
     paymentMethodID: z.coerce.number().min(1, "El método de pago es obligatorio"),
 });
 
@@ -55,7 +56,7 @@ const ExpenseFormDialog = ({ open, setOpen, paymentMethods, onSubmit, isCreating
     }, [createSuccess]);
 
     const handleFormSubmit = (data: FormData) => {
-        onSubmit({ description: data.description, value: data.value, paymentMethodID: data.paymentMethodID });
+        onSubmit({ description: data.description, value: data.value, expenseType: data.expenseType, paymentMethodID: data.paymentMethodID });
     };
 
     return (
@@ -71,6 +72,28 @@ const ExpenseFormDialog = ({ open, setOpen, paymentMethods, onSubmit, isCreating
                             <Input placeholder="Ej: Limpieza, mantenimiento..." {...register("description")} />
                             {errors.description && (
                                 <span className="text-xs text-destructive">{errors.description.message}</span>
+                            )}
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <Label>Tipo de gasto</Label>
+                            <Controller
+                                name="expenseType"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar tipo" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {EXPENSE_TYPES.map((t) => (
+                                                <SelectItem key={t} value={t}>{t}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.expenseType && (
+                                <span className="text-xs text-destructive">{errors.expenseType.message}</span>
                             )}
                         </div>
                         <FormDecimalInput formName="value" label="Valor" />

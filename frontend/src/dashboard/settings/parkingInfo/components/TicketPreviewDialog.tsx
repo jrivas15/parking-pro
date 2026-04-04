@@ -1,4 +1,5 @@
 import { useWatch } from "react-hook-form";
+import { usePrinterPreferences } from "@/hooks/usePrinterPreferences";
 import { Printer } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import dayjs from "dayjs";
@@ -10,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { buildEntryTicketData } from "@/utils/buildEntryTicketData";
 import type { ParkingInfoFormType } from "../schemas/parkingInfo.schema";
 import type { Movement } from "@/dashboard/parking/types/movements.type";
 
@@ -31,13 +31,30 @@ interface Props {
 
 const TicketPreviewDialog = ({ open, onOpenChange }: Props) => {
   const info = useWatch<ParkingInfoFormType>() as ParkingInfoFormType;
+  const { prefs } = usePrinterPreferences();
 
-  const handlePrint = async (preview = false) => {
-    const data = buildEntryTicketData(MOCK_MOVEMENT, info);
-    await window.electronAPI?.printTicket(data, {
-      printerName: info.printerName || undefined,
-      paperWidth: info.paperWidth ?? "80",
-      preview,
+  const handlePrint = async () => {
+    await window.electronAPI?.print({
+      type: 'entry',
+      movement: {
+        nTicket: MOCK_MOVEMENT.nTicket,
+        plate: MOCK_MOVEMENT.plate,
+        vehicleType: MOCK_MOVEMENT.vehicleType,
+        entryTime: MOCK_MOVEMENT.entryTime.toISOString(),
+      },
+      info: {
+        name: info.name,
+        nit: info.nit,
+        address: info.address,
+        phone: info.phone,
+        ticketHeader: info.ticketHeader,
+        ticketFooter: info.ticketFooter,
+        includeQRCode: info.includeQRCode,
+        includeParkingInfo: info.includeParkingInfo,
+        includeBasicRules: info.includeBasicRules,
+        printerName: prefs.printerName,
+        paperWidth: prefs.paperWidth,
+      },
     });
   };
 
@@ -115,6 +132,14 @@ const TicketPreviewDialog = ({ open, onOpenChange }: Props) => {
               {info.ticketFooter}
             </p>
           )}
+
+          <hr className="border-dashed my-2" />
+          <p className="text-center text-muted-foreground" style={{ fontSize: '9px' }}>
+            Ambientes Seguros S.A.S &copy; {new Date().getFullYear()}
+          </p>
+          <p className="text-center text-muted-foreground" style={{ fontSize: '9px' }}>
+            www.ambientes-seguros.com
+          </p>
         </div>
 
         <Separator />
@@ -123,7 +148,7 @@ const TicketPreviewDialog = ({ open, onOpenChange }: Props) => {
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cerrar
           </Button>
-          <Button onClick={() => handlePrint(false)}>
+          <Button onClick={() => handlePrint()}>
             <Printer size={14} /> Imprimir
           </Button>
         </div>

@@ -165,7 +165,7 @@ const useParking = () => {
 
   const handleSaleCompleted = (sale: SaleReceipt) => {
     setLastSale(sale);
-    if (prefs.autoPrint) {
+    if (prefs.autoPrintExit) {
       printExitTicket(sale);
     } else {
       setOpenPrintDialog(true);
@@ -175,12 +175,12 @@ const useParking = () => {
   const printExitTicket = (sale: SaleReceipt) => {
     const info = parkingInfoQuery.data;
     if (!info) return;
-    window.electronAPI?.print({ type: 'exit', sale, info });
+    window.electronAPI?.print({ type: 'exit', sale, info: { ...info, printerName: prefs.printerName, paperWidth: prefs.paperWidth } });
   };
 
   const printEntryTicket = (movement: Movement) => {
     const info = parkingInfoQuery.data;
-    if (!info || !prefs.autoPrint) return;
+    if (!info || !prefs.autoPrintEntry) return;
     window.electronAPI?.print({
       type: 'entry',
       movement: {
@@ -189,7 +189,22 @@ const useParking = () => {
         vehicleType: movement.vehicleType,
         entryTime: new Date(movement.entryTime).toISOString(),
       },
-      info,
+      info: { ...info, printerName: prefs.printerName, paperWidth: prefs.paperWidth },
+    });
+  };
+
+  const reprintEntryTicket = (movement: Movement) => {
+    const info = parkingInfoQuery.data;
+    if (!info) return;
+    window.electronAPI?.print({
+      type: 'entry',
+      movement: {
+        nTicket: movement.nTicket,
+        plate: movement.plate,
+        vehicleType: movement.vehicleType,
+        entryTime: new Date(movement.entryTime).toISOString(),
+      },
+      info: { ...info, printerName: prefs.printerName, paperWidth: prefs.paperWidth },
     });
   };
 
@@ -243,6 +258,7 @@ const useParking = () => {
     handleSaleCompleted,
     autoPrint: prefs.autoPrint,
     toggleAutoPrint,
+    reprintEntryTicket,
   };
 };
 

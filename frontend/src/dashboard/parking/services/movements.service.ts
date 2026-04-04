@@ -23,3 +23,8 @@ export const getLastExitMovements = async (): Promise<Movement[]> => {
     const response = await apiService.get("/movements/last_exit_movements/");
     return response.data;
 }
+
+export const updatePlate = async ({ plate, newPlate }: { plate: string; newPlate: string }): Promise<Movement> => {
+    const response = await apiService.patch(`/movements/update_plate/`, { plate, newPlate });
+    return response.data;
+}

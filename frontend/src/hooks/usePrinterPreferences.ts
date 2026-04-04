@@ -6,12 +6,16 @@ export interface PrinterPreferences {
   printerName: string;
   paperWidth: "58" | "80";
   autoPrint: boolean;
+  autoPrintEntry: boolean;
+  autoPrintExit: boolean;
 }
 
 const DEFAULTS: PrinterPreferences = {
   printerName: "",
   paperWidth: "80",
   autoPrint: true,
+  autoPrintEntry: true,
+  autoPrintExit: true,
 };
 
 export const usePrinterPreferences = () => {

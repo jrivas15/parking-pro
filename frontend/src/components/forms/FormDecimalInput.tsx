@@ -1,7 +1,7 @@
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 interface CustomInputProps {
   formName: string;
@@ -20,19 +20,6 @@ const FormDecimalInput = ({ formName, label, disabled, autoFocus, fxEnterKeyDown
       control={control}
       name={formName}
       render={({ field, fieldState }) => {
-        // Sync display with field value when it changes externally because it doesn't work properly if it isn't implemented
-        useEffect(() => {
-          const value = field.value ?? 0;
-          if (value === 0) {
-            setDisplay("");
-          } else {
-            const formatted = value.toLocaleString(undefined, {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            });
-            setDisplay(formatted);
-          }
-        }, [field.value]);
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           const raw = e.target.value.replace(/,/g, "");

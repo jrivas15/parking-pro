@@ -1,7 +1,8 @@
 import { LoginForm } from "@/components/login-form"
+
 const LoginPage = () => {
   return (
-    <div>
+    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
       <LoginForm />
     </div>
   )

@@ -8,6 +8,9 @@ declare global {
   interface ElectronAPI {
     getPrinters: () => Promise<{ name: string; displayName?: string }[]>;
     print: (payload: EntryPrintPayload | ExitPrintPayload) => Promise<{ ok: boolean; error?: string }>;
+    printCashCount: (payload: CashCountPayload) => Promise<{ ok: boolean; error?: string }>;
+    printExpense: (payload: ExpensePrintPayload) => Promise<{ ok: boolean; error?: string }>;
+    printExpensesSummary: (payload: ExpensesSummaryPayload) => Promise<{ ok: boolean; error?: string }>;
     testPrint: () => Promise<{ ok: boolean; error?: string }>;
     /** @deprecated use print() */
     printTicket: (data: unknown[], options: {
@@ -15,6 +18,31 @@ declare global {
       paperWidth?: string;
       preview?: boolean;
     }) => Promise<void>;
+  }
+
+  interface CashCountPayload {
+    counts: Record<number, number>;
+    base: number;
+    info: ParkingInfoForPrint;
+  }
+
+  interface ExpenseItem {
+    id: number;
+    description: string;
+    value: number;
+    expenseType: string | null;
+    paymentMethod: string | null;
+  }
+
+  interface ExpensePrintPayload {
+    expense: ExpenseItem;
+    info: ParkingInfoForPrint;
+  }
+
+  interface ExpensesSummaryPayload {
+    expenses: ExpenseItem[];
+    total: number;
+    info: ParkingInfoForPrint;
   }
 
   interface EntryPrintPayload {

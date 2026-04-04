@@ -13,7 +13,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import useCashCount from "./hooks/useCashCount"
+import useCashCount, { BILLS, COINS } from "./hooks/useCashCount"
+import useParkingInfoQuery from "@/dashboard/settings/parkingInfo/hooks/useParkingInfoQuery"
+import { usePrinterPreferences } from "@/hooks/usePrinterPreferences"
 
 import b100 from "@/assets/currencys/billete100.jpg"
 import b50 from "@/assets/currencys/billete50.jpg"
@@ -42,8 +44,6 @@ const DENOM_IMAGE: Record<number, string> = {
 }
 
 // ─── Denominations ────────────────────────────────────────────────────────────
-const BILLS = [100_000, 50_000, 20_000, 10_000, 5_000, 2_000]
-const COINS = [1_000, 500, 200, 100, 50]
 
 const fmt = (n: number) =>
   "$" + n.toLocaleString("es-CO", { minimumFractionDigits: 1 })
@@ -117,7 +117,9 @@ interface CashCountDialogProps {
 }
 
 const CashCountDialog = ({ open, onOpenChange }: CashCountDialogProps) => {
-  const { counts, base, inc, dec, setRaw, setBase, clear } = useCashCount()
+  const { counts, base, total, arqueo, inc, dec, setRaw, setBase, clear } = useCashCount()
+  const { parkingInfoQuery } = useParkingInfoQuery()
+  const { prefs } = usePrinterPreferences()
   const [openBaseDialog, setOpenBaseDialog] = useState(false)
   const [baseInput, setBaseInput] = useState("")
 
@@ -127,8 +129,15 @@ const CashCountDialog = ({ open, onOpenChange }: CashCountDialogProps) => {
     setOpenBaseDialog(false)
   }
 
-  const total = [...BILLS, ...COINS].reduce((sum, d) => sum + (counts[d] ?? 0) * d, 0)
-  const arqueo = total - base
+  const handlePrint = () => {
+    const info = parkingInfoQuery.data
+    if (!info) return
+    window.electronAPI?.printCashCount({
+      counts,
+      base,
+      info: { ...info, printerName: prefs.printerName, paperWidth: prefs.paperWidth },
+    })
+  }
 
   return (
     <>
@@ -223,7 +232,7 @@ const CashCountDialog = ({ open, onOpenChange }: CashCountDialogProps) => {
                 <PencilLine size={14} />
                 Definir base
               </Button>
-              <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Button variant="outline" size="sm" onClick={handlePrint}>
                 <Printer size={14} />
                 Imprimir
               </Button>

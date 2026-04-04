@@ -3,7 +3,7 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { printTicket } from './main/printer';
 import { generateQR } from './main/qr';
-import { buildEntryHTML, buildExitHTML } from './main/ticketTemplate';
+import { buildEntryHTML, buildExitHTML, buildCashCountHTML, buildExpenseHTML, buildExpensesSummaryHTML } from './main/ticketTemplate';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -15,6 +15,9 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 720,
+    icon: app.isPackaged
+      ? path.join(process.resourcesPath, 'icon.ico')
+      : path.join(__dirname, '../../src/assets/icons/icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -71,10 +74,29 @@ ipcMain.handle('printer:print', async (_event, payload: EntryPrintPayload | Exit
     const qrDataUrl = info.includeQRCode ? await generateQR(payload.movement.plate) : undefined;
     htmlContent = buildEntryHTML(payload, qrDataUrl);
   } else {
-    htmlContent = buildExitHTML(payload);
+    const qrDataUrl = info.includeQRCode ? await generateQR(payload.sale.movement.plate) : undefined;
+    htmlContent = buildExitHTML(payload, qrDataUrl);
   }
 
   return printTicket(htmlContent, info.printerName ?? '', info.paperWidth ?? '80');
+});
+
+// IPC: Print cash count (arqueo)
+ipcMain.handle('printer:cashCount', async (_event, payload: CashCountPayload) => {
+  const htmlContent = buildCashCountHTML(payload);
+  return printTicket(htmlContent, payload.info.printerName ?? '', payload.info.paperWidth ?? '80');
+});
+
+// IPC: Print individual expense
+ipcMain.handle('printer:expense', async (_event, payload: ExpensePrintPayload) => {
+  const htmlContent = buildExpenseHTML(payload);
+  return printTicket(htmlContent, payload.info.printerName ?? '', payload.info.paperWidth ?? '80');
+});
+
+// IPC: Print expenses summary
+ipcMain.handle('printer:expensesSummary', async (_event, payload: ExpensesSummaryPayload) => {
+  const htmlContent = buildExpensesSummaryHTML(payload);
+  return printTicket(htmlContent, payload.info.printerName ?? '', payload.info.paperWidth ?? '80');
 });
 
 // IPC: Test print

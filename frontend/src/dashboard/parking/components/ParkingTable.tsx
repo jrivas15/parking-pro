@@ -34,9 +34,10 @@ interface Props {
   data: Movement[];
   onSelectMovement: (movement: Movement) => void;
   onDoubleClickMovement?: (movement: Movement) => void;
+  onPrintMovement?: (movement: Movement) => void;
 }
 
-export function ParkingTable({ data, onSelectMovement, onDoubleClickMovement }: Props) {
+export function ParkingTable({ data, onSelectMovement, onDoubleClickMovement, onPrintMovement }: Props) {
   const columns: ColumnDef<Movement>[] = [
     {
       accessorKey: "plate",
@@ -144,7 +145,11 @@ export function ParkingTable({ data, onSelectMovement, onDoubleClickMovement }: 
             <Button variant="outline" size="sm" className="text-blue-500">
               <Image />
             </Button>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => { e.stopPropagation(); onPrintMovement?.(movement); }}
+            >
               <Printer />
             </Button>
           </div>

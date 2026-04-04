@@ -21,9 +21,10 @@ apiService.interceptors.request.use((config) => {
 apiService.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const isLoginRequest = error.config?.url?.includes('/users/login/');
+    if (error.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem('authToken');
-      window.location.href = '/'; 
+      window.location.href = '/';
     }
     return Promise.reject(error);
   }

@@ -1,82 +1,144 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Field,
-  FieldGroup,
-} from "@/components/ui/field";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import CustomInput from "./forms/CustomInput";
 import { FormProvider, useForm } from "react-hook-form";
 import { login } from "@/login/services/login.service";
 import { sileo } from "sileo";
+import { AlertCircle, Lock, User } from "lucide-react";
+import logo from "@/assets/icons/icon_svg.svg";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+const formSchema = z.object({
+  username: z.string().min(1, "El usuario es requerido"),
+  password: z.string().min(1, "La contraseña es requerida"),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const nav = useNavigate();
-  const formSchema = z.object({
-    username: z.string().min(1, "El usuario es requerido"),
-    password: z.string(),
-  });
-  const form = useForm<z.infer<typeof formSchema>>({
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-    },
+    defaultValues: { username: "", password: "" },
   });
 
-  const onSubmit = async(data: z.infer<typeof formSchema>) => {
+  const { register, handleSubmit, formState: { errors } } = form;
+
+  const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
+    setError(null);
     const dataUser = await login(data);
-    console.log(dataUser);
+    setIsLoading(false);
     if (dataUser) {
-      sileo.success({title:"Login exitoso", description:"Bienvenido de nuevo!"});
+      sileo.success({ title: "Acceso exitoso", description: `Bienvenido, ${dataUser.user.fullName}` });
       nav("/home");
-    }else{
-      sileo.error({title:"Error", description:"Usuario o contraseña incorrectos"});
+    } else {
+      setError("Usuario o contraseña incorrectos. Verifica tus credenciales.");
     }
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0 w-xl">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <FormProvider {...form}>
-            <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
-              <FieldGroup>
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <h1 className="text-2xl font-bold">Bienvenido</h1>
-                  <p className="text-muted-foreground text-balance">
-                    Accede a tu cuenta con tu usuario y contraseña
-                  </p>
-                </div>
-                <CustomInput formName="username" label="Usuario" />
-                <CustomInput
-                  formName="password"
-                  label="Contraseña"
-                  type="password"
-                />
-                <Field>
-                  <Button type="submit">Login</Button>
-                </Field>
+    <div className={cn("w-full max-w-4xl", className)} {...props}>
+      <div className="grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl border border-border">
 
-                <Field className="grid grid-cols-3 gap-4"></Field>
-              </FieldGroup>
-            </form>
-            <div className="bg-muted relative hidden md:block">
-              <img
-                src="/placeholder.svg"
-                alt="Image"
-                className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-              />
+        {/* Left — Brand panel */}
+        <div className="relative hidden md:flex flex-col items-center justify-center gap-8 p-10 bg-zinc-950 overflow-hidden">
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 opacity-[0.04]"
+            style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "28px 28px" }}
+          />
+          {/* Gold glow behind logo */}
+          <div className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-yellow-400/10 blur-3xl" />
+
+          <div className="relative z-10 flex flex-col items-center gap-5 text-center">
+            <img src={logo} alt="Parking Pro" className="w-24 h-24 rounded-2xl " />
+            <div className="flex flex-col gap-1">
+              <h2 className="text-3xl font-extrabold tracking-tight text-white">Parking Pro</h2>
+              <p className="text-zinc-400 text-sm">Sistema de gestión de parqueaderos</p>
             </div>
+          </div>
+
+          {/* Feature list */}
+          <div className="relative z-10 flex flex-col gap-3 w-full max-w-xs">
+            {["Control de ingresos y salidas", "Gestión de tarifas y pagos", "Reportes y cierres de caja"].map((f) => (
+              <div key={f} className="flex items-center gap-3 text-sm text-zinc-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400/70 shrink-0" />
+                {f}
+              </div>
+            ))}
+          </div>
+
+          <p className="relative z-10 mt-auto text-xs text-zinc-600">
+            Ambientes Seguros S.A.S &copy; {new Date().getFullYear()}
+          </p>
+        </div>
+
+        {/* Right — Form panel */}
+        <div className="flex flex-col justify-center bg-card p-10">
+          <div className="flex flex-col gap-1.5 mb-8">
+            <h1 className="text-2xl font-bold tracking-tight">Iniciar sesión</h1>
+            <p className="text-muted-foreground text-sm leading-relaxed">Ingresa tus credenciales para acceder al sistema</p>
+          </div>
+
+          <FormProvider {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+              {/* Username */}
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="username">Usuario</Label>
+                <div className="relative">
+                  <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="username"
+                    placeholder="Nombre de usuario"
+                    className="pl-9"
+                    {...register("username")}
+                  />
+                </div>
+                {errors.username && (
+                  <span className="text-xs text-destructive">{errors.username.message}</span>
+                )}
+              </div>
+
+              {/* Password */}
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="password">Contraseña</Label>
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    className="pl-9"
+                    {...register("password")}
+                  />
+                </div>
+                {errors.password && (
+                  <span className="text-xs text-destructive">{errors.password.message}</span>
+                )}
+              </div>
+
+              {/* Error message */}
+              {error && (
+                <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+                  <AlertCircle size={15} className="mt-0.5 shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              <Button type="submit" className="w-full font-semibold mt-1" disabled={isLoading}>
+                {isLoading ? "Verificando..." : "Ingresar"}
+              </Button>
+            </form>
           </FormProvider>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

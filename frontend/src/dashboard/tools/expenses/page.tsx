@@ -1,6 +1,6 @@
 import PageLayout from "@/layouts/PageLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingDown } from "lucide-react";
+import { Plus, Printer, TrendingDown } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import BackBtn from "@/components/shared/BackBtn";
 import { DataTable } from "@/components/shared/DataTable";
@@ -17,6 +17,7 @@ const ExpensesPage = () => {
         paymentMethods,
         openFormDialog,
         setOpenFormDialog,
+        printSummary,
         handleCreateExpense,
         isCreating,
         createSuccess,
@@ -35,13 +36,23 @@ const ExpensesPage = () => {
                             </span>
                         </div>
                     </div>
-                    <Button
-                        onClick={() => setOpenFormDialog(true)}
-                        className="bg-primary text-black hover:bg-primary/90 font-semibold gap-2"
-                    >
-                        <Plus size={16} />
-                        Nuevo gasto
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={printSummary}
+                            disabled={expenses.length === 0}
+                        >
+                            <Printer size={16} />
+                            Imprimir resumen
+                        </Button>
+                        <Button
+                            onClick={() => setOpenFormDialog(true)}
+                            className="bg-primary text-black hover:bg-primary/90 font-semibold gap-2"
+                        >
+                            <Plus size={16} />
+                            Nuevo gasto
+                        </Button>
+                    </div>
                 </header>
                 <Separator className="my-2" />
 

@@ -16,15 +16,54 @@ import {
 } from "lucide-react";
 
 import { FormProvider } from "react-hook-form";
+import { usePrinterPreferences } from "@/hooks/usePrinterPreferences";
 
 import useParkingInfo from "./hooks/useParkingInfo";
 import PageLayout from "@/layouts/PageLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TicketPreviewDialog from "./components/TicketPreviewDialog";
+
+const BASIC_RULES =
+  "El vehículo se entregará al portador del recibo. No aceptamos ordenes telefónicas ni escritas. Retirado el vehículo, no aceptamos ningún tipo de reclamo. * No respondemos por objetos dejados en el vehículo. * No respondemos por hurto. * No respondemos por la pérdida, deterioro o daños ocurridos como consecuencia de incendio, terremoto, asonada, revolución, u otras causas similares. * El conductor debe asegurarse que el vehículo esta bien asegurado. * No respondemos por daños al vehículo causados por terceros. En caso de perdida del recibo se debe diligenciar un formato con copia tarjeta de propiedad.";
 
 const ParkingInfo = () => {
   const { form, mode, handleEdit, handleCancel, onSubmit } = useParkingInfo();
+  const { prefs } = usePrinterPreferences();
   const [openPreview, setOpenPreview] = useState(false);
+
+  const useBasicRules = form.watch("includeBasicRules");
+
+  useEffect(() => {
+    if (useBasicRules) {
+      form.setValue("ticketFooter", BASIC_RULES, { shouldDirty: true });
+    }
+  }, [useBasicRules]);
+
+  const handlePrint = () => {
+    const info = form.getValues();
+    window.electronAPI?.print({
+      type: 'entry',
+      movement: {
+        nTicket: 90034,
+        plate: 'YYY333',
+        vehicleType: 'C',
+        entryTime: new Date().toISOString(),
+      },
+      info: {
+        name: info.name,
+        nit: info.nit,
+        address: info.address,
+        phone: info.phone,
+        ticketHeader: info.ticketHeader,
+        ticketFooter: info.ticketFooter,
+        includeQRCode: info.includeQRCode,
+        includeParkingInfo: info.includeParkingInfo,
+        includeBasicRules: info.includeBasicRules,
+        printerName: prefs.printerName,
+        paperWidth: prefs.paperWidth,
+      },
+    });
+  };
 
   return (
     <PageLayout>
@@ -140,7 +179,7 @@ const ParkingInfo = () => {
                   <FormTextArea
                     formName="ticketFooter"
                     label={"Pie de página"}
-                    disabled={mode === "view"}
+                    disabled={mode === "view" || useBasicRules}
                   />
                 </div>
               </div>
@@ -148,7 +187,7 @@ const ParkingInfo = () => {
                 <Button variant="outline" type="button" onClick={() => setOpenPreview(true)}>
                   <Eye /> Previsualizar
                 </Button>
-                <Button variant="outline" type="button" onClick={() => setOpenPreview(true)}>
+                <Button variant="outline" type="button" onClick={handlePrint}>
                   <Printer /> Imprimir
                 </Button>
               </menu>

@@ -4,7 +4,11 @@
       "Bash(xargs grep:*)",
       "Bash(find /c/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -type f \\\\\\(-name *route* -o -name *router* \\\\\\))",
       "Bash(find /c/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -type f -name *AppRoutes* -o -name *routes*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(grep -r 'class Expense' /c/Users/JSERVER/Documents/GitHub/parking-pro/backend --include=*.py)",
+      "Bash(grep -r expenses /c/Users/JSERVER/Documents/GitHub/parking-pro/backend --include=*.py -l)",
+      "Bash(find C:/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -type f -name *use*.ts*)",
+      "Bash(find /c/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -name *.ts -o -name *.tsx)"
     ]
   }
 }
