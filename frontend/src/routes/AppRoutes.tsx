@@ -23,6 +23,8 @@ import AdministrationPage from "@/dashboard/administration/page";
 import ReportsPage from "@/dashboard/administration/reports/page";
 import SalesClosingsPage from "@/dashboard/administration/salesClosings/page";
 import PrinterSettingsPage from "@/dashboard/settings/printer/page";
+import EInvoiceSettingsPage from "@/dashboard/settings/eInvoice/page";
+import EInvoicesPage from "@/dashboard/administration/eInvoices/page";
 
 export const routes = [
   {
@@ -57,4 +59,6 @@ export const routes = [
   { path: "/administration/reports", component: <ReportsPage /> },
   { path: "/administration/sales-closings", component: <SalesClosingsPage /> },
   { path: "/settings/printer", component: <PrinterSettingsPage /> },
+  { path: "/settings/fe", component: <EInvoiceSettingsPage /> },
+  { path: "/administration/fe", component: <EInvoicesPage /> },
 ];

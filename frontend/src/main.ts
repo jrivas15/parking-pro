@@ -20,6 +20,7 @@ const createWindow = () => {
       : path.join(__dirname, '../../src/assets/icons/icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      webSecurity: false,
     },
   });
 

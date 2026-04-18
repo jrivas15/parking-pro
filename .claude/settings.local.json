@@ -8,7 +8,8 @@
       "Bash(grep -r 'class Expense' /c/Users/JSERVER/Documents/GitHub/parking-pro/backend --include=*.py)",
       "Bash(grep -r expenses /c/Users/JSERVER/Documents/GitHub/parking-pro/backend --include=*.py -l)",
       "Bash(find C:/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -type f -name *use*.ts*)",
-      "Bash(find /c/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -name *.ts -o -name *.tsx)"
+      "Bash(find /c/Users/JSERVER/Documents/GitHub/parking-pro/frontend/src -name *.ts -o -name *.tsx)",
+      "Bash(find /Users/jotha/Documents/Github/parking-pro/backend -name requirements* -o -name Pipfile -o -name pyproject.toml)"
     ]
   }
 }

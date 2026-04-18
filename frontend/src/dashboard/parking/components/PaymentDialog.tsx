@@ -41,6 +41,8 @@ const PaymentDialog = ({
   selectedMovement,
   onSaleCompleted,
 }: Props) => {
+  const { listPaymentMethods: paymentMethods } = usePaymentMethodsQuery();
+
   const {
     form,
     total,
@@ -54,10 +56,9 @@ const PaymentDialog = ({
     handleSelectCustomer,
     handleClearCustomer,
     handleExactAmount,
-  } = usePaymentForm({ open, selectedMovement, setOpen, onSaleCompleted });
+  } = usePaymentForm({ open, selectedMovement, setOpen, onSaleCompleted, paymentMethods });
 
   const { data: tariffs } = useTariffQuery();
-  const { listPaymentMethods: paymentMethods } = usePaymentMethodsQuery();
   const paymentMethodOptions =
     paymentMethods?.map((pm) => ({
       label: pm.name,

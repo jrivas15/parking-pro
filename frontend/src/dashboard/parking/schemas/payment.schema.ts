@@ -14,7 +14,9 @@ export const paymentSchema = z.object({
     customerType: z.enum(["NATURAL", "JURIDICA"]),
     isEI: z.boolean(),
     parkingTime: z.string(),
-    tariff: z.string().min(1, "*Requerido")
+    tariff: z.string().min(1, "*Requerido"),
+    customerAddress: z.string().optional(),
+    customerCityCode: z.string().optional(),
 })
 
 export const defaultValues: PaymentFormData = {
@@ -32,6 +34,8 @@ export const defaultValues: PaymentFormData = {
     isEI: false,
     parkingTime: "",
     tariff: "1",
+    customerAddress: "",
+    customerCityCode: "",
 }
 
 export type PaymentFormData = z.infer<typeof paymentSchema>;

@@ -39,9 +39,10 @@ class PaymentCalculator:
             t0 = timezone.make_aware(t0)
         if timezone.is_naive(t1):
             t1 = timezone.make_aware(t1)
-        days = (t1 - t0).days
-        minutes = (t1 - t0).seconds/60
-        hours = minutes/60
+        total_seconds = max(0, (t1 - t0).total_seconds())
+        days = int(total_seconds // 86400)
+        minutes = (total_seconds % 86400) / 60
+        hours = minutes / 60
         decimal, entera = math.modf(hours)
         minutes = decimal*60
         hours = int(entera)

@@ -220,10 +220,10 @@ const SalesClosingsPage = () => {
                                     )}
                                     {reportSales.map((sale) => (
                                         <TableRow key={sale.id}>
-                                            <TableCell><Plate plate={sale.movement.plate} /></TableCell>
-                                            <TableCell><VehicleIcon type={sale.movement.vehicleType} /></TableCell>
-                                            <TableCell className="text-xs">{sale.movement.exitTime ? dayjs(sale.movement.exitTime).format("DD/MM HH:mm") : "—"}</TableCell>
-                                            <TableCell className="text-xs">{sale.movement.parkingTime}</TableCell>
+                                            <TableCell><Plate plate={sale.movement?.plate ?? ""} /></TableCell>
+                                            <TableCell><VehicleIcon type={sale.movement?.vehicleType ?? ""} /></TableCell>
+                                            <TableCell className="text-xs">{sale.movement?.exitTime ? dayjs(sale.movement.exitTime).format("DD/MM HH:mm") : "—"}</TableCell>
+                                            <TableCell className="text-xs">{sale.movement?.parkingTime ?? "—"}</TableCell>
                                             <TableCell className="text-right font-semibold">{formatMoney(Number(sale.total))}</TableCell>
                                             <TableCell>
                                                 <Badge variant="outline">{sale.paymentMethod?.name ?? "—"}</Badge>

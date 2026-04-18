@@ -3,9 +3,12 @@ from django.http import HttpRequest, JsonResponse
 from .models import User
 import json
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 
 @csrf_exempt
@@ -60,17 +63,19 @@ def signup_view(request: HttpRequest):
             }
         }, status=201)
 
-@login_required
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def me_view(request):
     user = request.user
-    return JsonResponse({
+    return Response({
         "id": user.id,
         "username": user.username,
         "fullName": user.fullName,
         "imgURL": user.imgURL,
         "lastLogin": user.lastLogin,
         "role": user.groups.first().name if user.groups.exists() else None
-        })
+    })
 
 def logout_view(request):
     logout(request)
